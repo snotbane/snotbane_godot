@@ -1,0 +1,70 @@
+[gd_resource type="VisualShader" load_steps=7 format=3 uid="uid://c2ld7hbu71qgv"]
+
+[sub_resource type="VisualShaderNodeTexture" id="VisualShaderNodeTexture_6wyuk"]
+source = 1
+
+[sub_resource type="VisualShaderNodeColorFunc" id="VisualShaderNodeColorFunc_1a4ll"]
+
+[sub_resource type="VisualShaderNodeFloatOp" id="VisualShaderNodeFloatOp_yao43"]
+default_input_values = [0, 0.0, 1, 0.5]
+
+[sub_resource type="VisualShaderNodeFloatOp" id="VisualShaderNodeFloatOp_yrq26"]
+default_input_values = [0, 0.0, 1, 1.0]
+operator = 4
+
+[sub_resource type="VisualShaderNodeFloatFunc" id="VisualShaderNodeFloatFunc_6wyuk"]
+function = 31
+
+[sub_resource type="VisualShaderNodeVectorFunc" id="VisualShaderNodeVectorFunc_1a4ll"]
+function = 32
+
+[resource]
+code = "shader_type canvas_item;
+render_mode blend_mix;
+
+uniform sampler2D screen_tex_frg_2 : hint_screen_texture;
+
+
+
+void fragment() {
+	vec4 n_out2p0;
+// Texture2D:2
+	n_out2p0 = texture(screen_tex_frg_2, SCREEN_UV);
+
+
+	vec3 n_out3p0;
+// ColorFunc:3
+	{
+		vec3 c = vec3(n_out2p0.xyz);
+		float max1 = max(c.r, c.g);
+		float max2 = max(max1, c.b);
+		n_out3p0 = vec3(max2, max2, max2);
+	}
+
+
+// VectorFunc:7
+	vec3 n_out7p0 = vec3(1.0) - n_out3p0;
+
+
+// Output:0
+	COLOR.rgb = n_out7p0;
+
+
+}
+"
+mode = 1
+flags/light_only = false
+nodes/fragment/0/position = Vector2(380, 420)
+nodes/fragment/2/node = SubResource("VisualShaderNodeTexture_6wyuk")
+nodes/fragment/2/position = Vector2(-1460, 0)
+nodes/fragment/3/node = SubResource("VisualShaderNodeColorFunc_1a4ll")
+nodes/fragment/3/position = Vector2(-980, 0)
+nodes/fragment/4/node = SubResource("VisualShaderNodeFloatOp_yao43")
+nodes/fragment/4/position = Vector2(-620, 420)
+nodes/fragment/5/node = SubResource("VisualShaderNodeFloatOp_yrq26")
+nodes/fragment/5/position = Vector2(-180, 0)
+nodes/fragment/6/node = SubResource("VisualShaderNodeFloatFunc_6wyuk")
+nodes/fragment/6/position = Vector2(-520, -300)
+nodes/fragment/7/node = SubResource("VisualShaderNodeVectorFunc_1a4ll")
+nodes/fragment/7/position = Vector2(-540, -40)
+nodes/fragment/connections = PackedInt32Array(2, 0, 3, 0, 4, 0, 5, 0, 3, 0, 4, 0, 3, 0, 6, 0, 3, 0, 7, 0, 7, 0, 0, 0)

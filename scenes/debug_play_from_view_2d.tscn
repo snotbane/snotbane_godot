@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://d3yjatu54gemb"]
+
+[ext_resource type="Script" uid="uid://boqln6wsyn7tv" path="res://addons/mincuz_godot/scenes/debug_play_from_view_2d.gd" id="1_3l3qo"]
+
+[node name="debug_play_from_view_2d" type="Node2D"]
+script = ExtResource("1_3l3qo")
