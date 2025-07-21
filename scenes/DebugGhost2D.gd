@@ -18,7 +18,7 @@ extends Node2D
 @export_range(0.0, 90.0, 5.0, "or_greater") var turn_interval_degrees : float = 0.0
 
 
-var revert_mouse_mode : Input.MouseMode = -1
+var revert_mouse_mode : Input.MouseMode
 var move_input_vector_mouse : Vector2
 var pawn : Node2D
 
@@ -27,7 +27,7 @@ var use_turn_interval : bool :
 	get: return not is_zero_approx(turn_interval_degrees)
 
 var is_sprinting : bool :
-	get: return Input.is_action_pressed(&"ghost_sprint")
+	get: return Input.is_action_pressed(Mincuz.INPUT_GHOST_SPRINT)
 
 
 func populate(__pawn: Node2D) -> void:
@@ -43,9 +43,9 @@ func populate_from_camera(camera: Camera2D) -> void:
 	node.make_current()
 
 
-func populate_from_transform(transform: Transform2D) -> void:
+func populate_from_transform(__transform__: Transform2D) -> void:
 	change_mouse_mode()
-	self.global_transform = transform
+	self.global_transform = __transform__
 	var node := Camera2D.new()
 	self.add_child(node)
 	node.make_current()
@@ -64,11 +64,11 @@ func _exit_tree() -> void:
 
 func _process(delta: float) -> void:
 	if not use_turn_interval:
-		var turn_axis := Input.get_axis(&"ghost_move_up", &"ghost_move_down")
+		var turn_axis := Input.get_axis(Mincuz.INPUT_GHOST_MOVE_UP, Mincuz.INPUT_GHOST_MOVE_DOWN)
 		self.global_rotation_degrees += turn_axis * turn_speed_degrees * delta
 
 	var move_vector := Vector2.ZERO
-	move_vector += (Input.get_vector(&"ghost_move_left", &"ghost_move_right", &"ghost_move_forward", &"ghost_move_back") + Input.get_vector(&"ghost_camera_left", &"ghost_camera_right", &"ghost_camera_up", &"ghost_camera_down")) * speed
+	move_vector += (Input.get_vector(Mincuz.INPUT_GHOST_MOVE_LEFT, Mincuz.INPUT_GHOST_MOVE_RIGHT, Mincuz.INPUT_GHOST_MOVE_FORWARD, Mincuz.INPUT_GHOST_MOVE_BACK) + Input.get_vector(Mincuz.INPUT_GHOST_CAMERA_LEFT, Mincuz.INPUT_GHOST_CAMERA_RIGHT, Mincuz.INPUT_GHOST_CAMERA_UP, Mincuz.INPUT_GHOST_CAMERA_DOWN)) * speed
 
 	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		move_vector += move_input_vector_mouse * speed_mouse
@@ -80,9 +80,9 @@ func _process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if use_turn_interval:
-		if event.is_action_pressed(&"ghost_move_up"):
+		if event.is_action_pressed(Mincuz.INPUT_GHOST_MOVE_UP):
 			self.global_rotation_degrees += turn_interval_degrees
-		elif event.is_action_pressed(&"ghost_move_down"):
+		elif event.is_action_pressed(Mincuz.INPUT_GHOST_MOVE_DOWN):
 			self.global_rotation_degrees -= turn_interval_degrees
 	if event is InputEventMouseMotion:
 		move_input_vector_mouse += event.relative

@@ -11,7 +11,7 @@ func _ready() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if event.is_action_pressed("fullscreen"):
+	if event.is_action_pressed(Mincuz.INPUT_FULLSCREEN):
 		self.is_in_fullscreen = not self.is_in_fullscreen
 
 

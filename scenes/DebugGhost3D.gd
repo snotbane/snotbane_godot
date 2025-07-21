@@ -27,7 +27,7 @@ var turn_input_vector_mouse : Vector2
 
 
 var is_sprinting : bool :
-	get: return Input.is_action_pressed(&"ghost_sprint")
+	get: return Input.is_action_pressed(Mincuz.INPUT_GHOST_SPRINT)
 
 
 func populate_from_camera(camera: Camera3D) -> void:
@@ -58,7 +58,7 @@ func _process(delta: float) -> void:
 
 	var turn_rotation_degrees := Vector3.ZERO
 
-	var turn_input_vector := Input.get_vector(&"ghost_camera_left", &"ghost_camera_right", &"ghost_camera_down", &"ghost_camera_up")
+	var turn_input_vector := Input.get_vector(Mincuz.INPUT_GHOST_CAMERA_LEFT, Mincuz.INPUT_GHOST_CAMERA_RIGHT, Mincuz.INPUT_GHOST_CAMERA_DOWN, Mincuz.INPUT_GHOST_CAMERA_UP)
 	var turn_vector := Vector3(turn_input_vector.y, -turn_input_vector.x, 0.0)
 	turn_rotation_degrees += turn_vector * turn_speed
 
@@ -82,7 +82,7 @@ func _process(delta: float) -> void:
 	#endregion
 	#region Movement
 
-	var move_vector := Vector3(Input.get_axis(&"ghost_move_left", &"ghost_move_right"), Input.get_axis(&"ghost_move_down", &"ghost_move_up"), Input.get_axis(&"ghost_move_forward", &"ghost_move_back"))
+	var move_vector := Vector3(Input.get_axis(Mincuz.INPUT_GHOST_MOVE_LEFT, Mincuz.INPUT_GHOST_MOVE_RIGHT), Input.get_axis(Mincuz.INPUT_GHOST_MOVE_DOWN, Mincuz.INPUT_GHOST_MOVE_UP), Input.get_axis(Mincuz.INPUT_GHOST_MOVE_FORWARD, Mincuz.INPUT_GHOST_MOVE_BACK))
 
 	var move_quat : Quaternion
 	if global_move_axis:

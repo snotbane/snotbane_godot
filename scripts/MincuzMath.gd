@@ -4,11 +4,11 @@ static func random_sign(random: RandomNumberGenerator = null) -> int:
 	return +1 if random.randi() % 2 else -1
 
 
-static func random_float(range: Vector2, random: RandomNumberGenerator = null) -> float:
+static func random_float(__range__: Vector2, random: RandomNumberGenerator = null) -> float:
 	if random:
-		return random.randf_range(range.x, range.y)
+		return random.randf_range(__range__.x, __range__.y)
 	else:
-		return randf_range(range.x, range.y)
+		return randf_range(__range__.x, __range__.y)
 
 
 static func random_unit_vector2(random: RandomNumberGenerator = null) -> Vector2:
@@ -24,15 +24,15 @@ static func random_unit_vector3(random: RandomNumberGenerator = null) -> Vector3
 
 
 ## Returns a [float] with a random sign within the specified [range]
-static func random_vector1(range: Vector2, random: RandomNumberGenerator = null) -> float:
-	return random_float(range, random) * random_sign(random)
+static func random_vector1(__range__: Vector2, random: RandomNumberGenerator = null) -> float:
+	return random_float(__range__, random) * random_sign(random)
 
 
 ## Returns a [Vector2] in a random direction with a length within the specified [Vector2] range.
-static func random_vector2(range: Vector2, random: RandomNumberGenerator = null) -> Vector2:
-	return random_unit_vector2(random) * random_float(range, random)
+static func random_vector2(__range__: Vector2, random: RandomNumberGenerator = null) -> Vector2:
+	return random_unit_vector2(random) * random_float(__range__, random)
 
 
 ## Returns a [Vector3] in a random direction with a length within the specified [Vector2] range.
-static func random_vector3(range: Vector2, random: RandomNumberGenerator = null) -> Vector3:
-	return random_unit_vector3(random) * random_float(range, random)
+static func random_vector3(__range__: Vector2, random: RandomNumberGenerator = null) -> Vector3:
+	return random_unit_vector3(random) * random_float(__range__, random)
