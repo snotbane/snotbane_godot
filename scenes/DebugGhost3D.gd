@@ -1,4 +1,3 @@
-
 ## Allows the user to freely move around 3D scenes for debugging purposes.
 extends Node3D
 

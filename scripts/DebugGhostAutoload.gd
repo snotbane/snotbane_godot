@@ -1,4 +1,5 @@
-class_name DebugGhostAutoload extends Node
+extends Node
+class_name DebugGhostAutoload
 
 static var GHOST_2D_SCENE : PackedScene = preload("uid://cv3vrsaxhhhkb")
 static var GHOST_3D_SCENE : PackedScene = preload("uid://cwcqawp5x05vt")
