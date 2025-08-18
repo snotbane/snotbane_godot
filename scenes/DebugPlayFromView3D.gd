@@ -1,6 +1,5 @@
 ## Moves a node (i.e. the player) to match the editor's view on game start. Only works once and in an editor build. Also passes some controls along to debug ghost cameras.
-@tool
-extends Node3D
+@tool extends Node3D
 
 static var can_be_activated : bool :
 	get: return OS.has_feature("editor") and Time.get_ticks_msec() < 1000
