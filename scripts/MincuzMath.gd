@@ -36,3 +36,17 @@ static func random_vector2(__range__: Vector2, random: RandomNumberGenerator = n
 ## Returns a [Vector3] in a random direction with a length within the specified [Vector2] range.
 static func random_vector3(__range__: Vector2, random: RandomNumberGenerator = null) -> Vector3:
 	return random_unit_vector3(random) * random_float(__range__, random)
+
+
+static func xy(v: Vector3) -> Vector2:
+	return Vector2(v.x, v.y)
+static func xz(v: Vector3) -> Vector2:
+	return Vector2(v.x, v.z)
+static func yz(v: Vector3) -> Vector2:
+	return Vector2(v.y, v.z)
+
+static func x_y(v: Vector2, y: float = 0.0) -> Vector3:
+	return Vector3(v.x, y, v.y)
+static func xy_(v: Vector2, z: float = 0.0) -> Vector3:
+	return Vector3(v.x, v.y, z)
+
