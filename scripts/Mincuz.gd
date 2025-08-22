@@ -57,29 +57,3 @@ static func add_default_input_binding(binding_name: String, events: Array = [], 
 		"deadzone": deadzone,
 		"events": events,
 	})
-
-
-static func detach(node: Node) -> void:
-	var gt = node.global_transform
-	var root = node.get_tree().root
-	node.get_parent().remove_child(node)
-	root.add_child(node)
-	node.global_transform = gt
-
-
-static func attach(child: Node, parent: Node, in_place := true) -> void:
-	var apply_global := child.is_inside_tree() and in_place
-	var gt
-	if apply_global:
-		gt = child.global_transform
-
-	child.get_parent().remove_child(child)
-	parent.add_child(child)
-
-	if apply_global:
-		child.global_transform = gt
-	elif child is Node3D:
-		child.global_transform = Transform3D.IDENTITY
-	elif child is Node2D:
-		child.global_transform = Transform2D.IDENTITY
-
