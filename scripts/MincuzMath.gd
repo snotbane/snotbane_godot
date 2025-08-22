@@ -11,6 +11,10 @@ static func random_float(__range__: Vector2, random: RandomNumberGenerator = nul
 		return randf_range(__range__.x, __range__.y)
 
 
+static func random_unit_vector1(random: RandomNumberGenerator = null) -> float:
+	return randf_range(-1.0, +1.0)
+
+
 static func random_unit_vector2(random: RandomNumberGenerator = null) -> Vector2:
 	return Vector2.RIGHT.rotated(random_float(Vector2(-PI, +PI), random))
 
