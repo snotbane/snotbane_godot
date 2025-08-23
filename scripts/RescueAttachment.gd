@@ -15,6 +15,8 @@ func _ready() -> void:
 	parent.tree_exiting.connect(rescue)
 
 func rescue() -> void:
+	if not parent.is_queued_for_deletion(): return
+
 	var gt
 	var apply_global := node is Node2D or node is Node3D
 	if apply_global:
@@ -35,7 +37,5 @@ func rescue() -> void:
 	times_rescued += 1
 	rescued.emit()
 
-func queue_free_if_rescued() -> void:
-	if times_rescued == 0: return
-
-	queue_free()
+	_rescue()
+func _rescue() -> void: pass

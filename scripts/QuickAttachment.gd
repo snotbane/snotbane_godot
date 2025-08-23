@@ -1,6 +1,21 @@
 ## This is a helper [Node] that moves its parent to the local transform identity over a time, and then deletes itself.
 class_name QuickAttachment extends Timer
 
+static func remove_all_quick_attachments(node: Node) -> void:
+	for child in node.get_children():
+		if child is QuickAttachment:
+			child.queue_free()
+
+
+## Detaches the node in its world place.
+static func detach(node: Node) -> void:
+	var gt = node.global_transform
+	var root = node.get_tree().root
+	node.get_parent().remove_child(node)
+	root.add_child(node)
+	node.global_transform = gt
+
+
 ## Reattaches the [child] to the [parent] in world space, but that's it. No animation. If a [QuickAttachment] already exists, it will be overwritten.
 static func attach_in_place(child: Node, parent: Node) -> QuickAttachment:
 	assert((child is Node2D and parent is Node2D) or (child is Node3D and parent is Node3D), "Parent '%s' and child '%s' must both be a Node2D or Node3D, and they must be the same." % [parent, child])
@@ -16,9 +31,7 @@ static func attach_in_place(child: Node, parent: Node) -> QuickAttachment:
 	if apply_global:
 		child.global_transform = gt
 
-	for child_child in child.get_children():
-		if child_child is QuickAttachment:
-			child_child.queue_free()
+	remove_all_quick_attachments(child)
 
 	var result := QuickAttachment.new(child.transform)
 	child.add_child(result)
@@ -47,14 +60,6 @@ static func attach_with_curve(child: Node, parent: Node, curve: Curve) -> QuickA
 
 	return result
 
-## Detaches the node in its world place.
-static func detach(node: Node) -> void:
-	var gt = node.global_transform
-	var root = node.get_tree().root
-	node.get_parent().remove_child(node)
-	root.add_child(node)
-	node.global_transform = gt
-
 
 var curve : Curve
 var alpha_method : Callable = get_alpha_linear
@@ -73,6 +78,7 @@ func _init(__original_transform__) -> void:
 
 
 func _exit_tree() -> void:
+	stop()
 	if get_parent() is Node2D:
 		get_parent().transform = Transform2D.IDENTITY
 	elif get_parent() is Node3D:
