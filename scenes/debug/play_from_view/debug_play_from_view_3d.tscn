@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://om4cv5l72pyt"]
+
+[ext_resource type="Script" uid="uid://sek5pfaqqpk6" path="res://addons/mincuz/scenes/debug/play_from_view/DebugPlayFromView3D.gd" id="1_nlu3b"]
+
+[node name="debug_play_from_view_3d" type="Node3D"]
+script = ExtResource("1_nlu3b")

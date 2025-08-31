@@ -174,3 +174,10 @@ func configure_input() -> void:
 		ghost_camera_up_0,
 		ghost_camera_up_1,
 	])
+
+
+	var debug_grid_toggle_0 := InputEventKey.new()
+	debug_grid_toggle_0.physical_keycode = KEY_PERIOD
+	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_DEBUG_GRID_TOGGLE, [
+		debug_grid_toggle_0,
+	])

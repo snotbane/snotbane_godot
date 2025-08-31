@@ -1,0 +1,13 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://bm5n28m8boujc"]
+
+[ext_resource type="Shader" uid="uid://dgx8is1uf2ug0" path="res://addons/mincuz/scenes/debug/grid/world_grid_3d.gdshader" id="1_fm0et"]
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_fm0et")
+shader_parameter/orientation_hinting_strength = 0.1
+shader_parameter/dot_radius = 0.01
+shader_parameter/dot_spacing = 1.0
+shader_parameter/max_render_distance = 10.0
+shader_parameter/march_precision = 16
+shader_parameter/base_color = Color(0.333, 0.333, 0.333, 1)

@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dvp3hlokwd4ac"
-path="res://.godot/imported/marquee_border.png-69c5aba08b05233e2b9abf304dbfaec4.ctex"
+path="res://.godot/imported/marquee_border.png-08260be67037967d2187e80ba60add9e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/mincuz_godot/textures/marquee_border.png"
-dest_files=["res://.godot/imported/marquee_border.png-69c5aba08b05233e2b9abf304dbfaec4.ctex"]
+source_file="res://addons/mincuz/textures/marquee_border.png"
+dest_files=["res://.godot/imported/marquee_border.png-08260be67037967d2187e80ba60add9e.ctex"]
 
 [params]
 
