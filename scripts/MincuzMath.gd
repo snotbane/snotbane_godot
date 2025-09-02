@@ -42,6 +42,10 @@ static func random_vector3(__range__: Vector2, random: RandomNumberGenerator = n
 	return random_unit_vector3(random) * random_float(__range__, random)
 
 
+static func is_in_range(x: float, __range__: Vector2) -> bool:
+	return x >= __range__.x and x <= __range__.y
+
+
 static func xy(v: Vector3) -> Vector2:
 	return Vector2(v.x, v.y)
 static func xz(v: Vector3) -> Vector2:
