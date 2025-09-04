@@ -60,3 +60,9 @@ static func add_default_input_binding(binding_name: String, events: Array = [], 
 		"deadzone": deadzone,
 		"events": events,
 	})
+
+static var NOW_MILLI : float :
+	get: return Time.get_ticks_msec() * 0.00_1
+
+static var NOW_MICRO : float :
+	get: return Time.get_ticks_usec() * 0.00_000_1
