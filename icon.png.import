@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dvp3hlokwd4ac"
-path="res://.godot/imported/marquee_border.png-cc0f7b06607b8d73c21ceb194f657b53.ctex"
+uid="uid://h05r4ilh3s40"
+path="res://.godot/imported/icon.png-7f92f03d9d999c1269e40f287d1203f6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/snotbane/textures/marquee_border.png"
-dest_files=["res://.godot/imported/marquee_border.png-cc0f7b06607b8d73c21ceb194f657b53.ctex"]
+source_file="res://addons/snotbane/icon.png"
+dest_files=["res://.godot/imported/icon.png-7f92f03d9d999c1269e40f287d1203f6.ctex"]
 
 [params]
 
@@ -31,4 +31,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0
