@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://dsnj7vcelmovd"]
 
-[ext_resource type="Shader" uid="uid://c2ld7hbu71qgv" path="res://addons/mincuz_godot/shaders/canvas_invert_screen.tres" id="1_g2iss"]
+[ext_resource type="Shader" uid="uid://c2ld7hbu71qgv" path="res://addons/penny_godot/snotbane/shaders/canvas_invert_screen.tres" id="1_g2iss"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_yo73g"]
 shader = ExtResource("1_g2iss")

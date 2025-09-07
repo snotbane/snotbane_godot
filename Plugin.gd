@@ -16,7 +16,7 @@ func configure_input() -> void:
 	var quit_0 := InputEventKey.new()
 	quit_0.physical_keycode = KEY_Q
 	quit_0.ctrl_pressed = true
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_QUIT, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_QUIT, [
 		quit_0,
 	])
 
@@ -26,7 +26,7 @@ func configure_input() -> void:
 	fullscreen_1.physical_keycode = KEY_F
 	fullscreen_1.ctrl_pressed = true
 	fullscreen_1.command_or_control_autoremap = true
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_FULLSCREEN, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_FULLSCREEN, [
 		fullscreen_0,
 		fullscreen_1,
 	])
@@ -40,7 +40,7 @@ func configure_input() -> void:
 	fullscreen_exclusive_1.shift_pressed = true
 	fullscreen_exclusive_1.ctrl_pressed = true
 	fullscreen_exclusive_1.command_or_control_autoremap = true
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_FULLSCREEN_EXCLUSIVE, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_FULLSCREEN_EXCLUSIVE, [
 		fullscreen_exclusive_0,
 		fullscreen_exclusive_1,
 	])
@@ -48,7 +48,7 @@ func configure_input() -> void:
 
 	var ghost_toggle_0 := InputEventKey.new()
 	ghost_toggle_0.physical_keycode = KEY_V
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_GHOST_TOGGLE, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_TOGGLE, [
 		ghost_toggle_0,
 	])
 
@@ -58,7 +58,7 @@ func configure_input() -> void:
 	ghost_teleport_0.shift_pressed = true
 	var ghost_teleport_1 := InputEventKey.new()
 	ghost_teleport_1.physical_keycode = KEY_ENTER
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_GHOST_TELEPORT, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_TELEPORT, [
 		ghost_teleport_0,
 		ghost_teleport_1,
 	])
@@ -68,7 +68,7 @@ func configure_input() -> void:
 	ghost_sprint_0.physical_keycode = KEY_SHIFT
 	var ghost_sprint_1 := InputEventJoypadButton.new()
 	ghost_sprint_1.button_index = JOY_BUTTON_LEFT_STICK
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_GHOST_SPRINT, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_SPRINT, [
 		ghost_sprint_0,
 		ghost_sprint_1,
 	])
@@ -79,7 +79,7 @@ func configure_input() -> void:
 	var ghost_move_left_1 := InputEventJoypadMotion.new()
 	ghost_move_left_1.axis = JOY_AXIS_LEFT_X
 	ghost_move_left_1.axis_value = -1.0
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_GHOST_MOVE_LEFT, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_MOVE_LEFT, [
 		ghost_move_left_0,
 		ghost_move_left_1,
 	])
@@ -90,7 +90,7 @@ func configure_input() -> void:
 	var ghost_move_right_1 := InputEventJoypadMotion.new()
 	ghost_move_right_1.axis = JOY_AXIS_LEFT_X
 	ghost_move_right_1.axis_value = +1.0
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_GHOST_MOVE_RIGHT, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_MOVE_RIGHT, [
 		ghost_move_right_0,
 		ghost_move_right_1,
 	])
@@ -98,14 +98,14 @@ func configure_input() -> void:
 
 	var ghost_move_down_0 := InputEventKey.new()
 	ghost_move_down_0.physical_keycode = KEY_Q
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_GHOST_MOVE_DOWN, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_MOVE_DOWN, [
 		ghost_move_down_0,
 	])
 
 
 	var ghost_move_up_0 := InputEventKey.new()
 	ghost_move_up_0.physical_keycode = KEY_E
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_GHOST_MOVE_UP, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_MOVE_UP, [
 		ghost_move_up_0,
 	])
 
@@ -115,7 +115,7 @@ func configure_input() -> void:
 	var ghost_move_back_1 := InputEventJoypadMotion.new()
 	ghost_move_back_1.axis = JOY_AXIS_LEFT_Y
 	ghost_move_back_1.axis_value = -1.0
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_GHOST_MOVE_BACK, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_MOVE_BACK, [
 		ghost_move_back_0,
 		ghost_move_back_1,
 	])
@@ -126,7 +126,7 @@ func configure_input() -> void:
 	var ghost_move_forward_1 := InputEventJoypadMotion.new()
 	ghost_move_forward_1.axis = JOY_AXIS_LEFT_Y
 	ghost_move_forward_1.axis_value = +1.0
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_GHOST_MOVE_FORWARD, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_MOVE_FORWARD, [
 		ghost_move_forward_0,
 		ghost_move_forward_1,
 	])
@@ -137,7 +137,7 @@ func configure_input() -> void:
 	var ghost_camera_left_1 := InputEventJoypadMotion.new()
 	ghost_camera_left_1.axis = JOY_AXIS_RIGHT_X
 	ghost_camera_left_1.axis_value = -1.0
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_GHOST_CAMERA_LEFT, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_CAMERA_LEFT, [
 		ghost_camera_left_0,
 		ghost_camera_left_1,
 	])
@@ -148,7 +148,7 @@ func configure_input() -> void:
 	var ghost_camera_right_1 := InputEventJoypadMotion.new()
 	ghost_camera_right_1.axis = JOY_AXIS_RIGHT_X
 	ghost_camera_right_1.axis_value = +1.0
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_GHOST_CAMERA_RIGHT, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_CAMERA_RIGHT, [
 		ghost_camera_right_0,
 		ghost_camera_right_1,
 	])
@@ -159,7 +159,7 @@ func configure_input() -> void:
 	var ghost_camera_down_1 := InputEventJoypadMotion.new()
 	ghost_camera_down_1.axis = JOY_AXIS_RIGHT_Y
 	ghost_camera_down_1.axis_value = -1.0
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_GHOST_CAMERA_DOWN, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_CAMERA_DOWN, [
 		ghost_camera_down_0,
 		ghost_camera_down_1,
 	])
@@ -170,7 +170,7 @@ func configure_input() -> void:
 	var ghost_camera_up_1 := InputEventJoypadMotion.new()
 	ghost_camera_up_1.axis = JOY_AXIS_RIGHT_Y
 	ghost_camera_up_1.axis_value = +1.0
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_GHOST_CAMERA_UP, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_CAMERA_UP, [
 		ghost_camera_up_0,
 		ghost_camera_up_1,
 	])
@@ -178,6 +178,6 @@ func configure_input() -> void:
 
 	var debug_grid_toggle_0 := InputEventKey.new()
 	debug_grid_toggle_0.physical_keycode = KEY_PERIOD
-	Mincuz.add_default_input_binding(Mincuz.SETTING_INPUT_DEBUG_GRID_TOGGLE, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_DEBUG_GRID_TOGGLE, [
 		debug_grid_toggle_0,
 	])

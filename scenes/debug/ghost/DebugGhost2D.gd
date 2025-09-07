@@ -26,7 +26,7 @@ var use_turn_interval : bool :
 	get: return not is_zero_approx(turn_interval_degrees)
 
 var is_sprinting : bool :
-	get: return Input.is_action_pressed(Mincuz.INPUT_GHOST_SPRINT)
+	get: return Input.is_action_pressed(Snotbane.INPUT_GHOST_SPRINT)
 
 
 func populate(__pawn: Node2D) -> void:
@@ -63,11 +63,11 @@ func _exit_tree() -> void:
 
 func _process(delta: float) -> void:
 	if not use_turn_interval:
-		var turn_axis := Input.get_axis(Mincuz.INPUT_GHOST_MOVE_UP, Mincuz.INPUT_GHOST_MOVE_DOWN)
+		var turn_axis := Input.get_axis(Snotbane.INPUT_GHOST_MOVE_UP, Snotbane.INPUT_GHOST_MOVE_DOWN)
 		self.global_rotation_degrees += turn_axis * turn_speed_degrees * delta
 
 	var move_vector := Vector2.ZERO
-	move_vector += (Input.get_vector(Mincuz.INPUT_GHOST_MOVE_LEFT, Mincuz.INPUT_GHOST_MOVE_RIGHT, Mincuz.INPUT_GHOST_MOVE_FORWARD, Mincuz.INPUT_GHOST_MOVE_BACK) + Input.get_vector(Mincuz.INPUT_GHOST_CAMERA_LEFT, Mincuz.INPUT_GHOST_CAMERA_RIGHT, Mincuz.INPUT_GHOST_CAMERA_UP, Mincuz.INPUT_GHOST_CAMERA_DOWN)) * speed
+	move_vector += (Input.get_vector(Snotbane.INPUT_GHOST_MOVE_LEFT, Snotbane.INPUT_GHOST_MOVE_RIGHT, Snotbane.INPUT_GHOST_MOVE_FORWARD, Snotbane.INPUT_GHOST_MOVE_BACK) + Input.get_vector(Snotbane.INPUT_GHOST_CAMERA_LEFT, Snotbane.INPUT_GHOST_CAMERA_RIGHT, Snotbane.INPUT_GHOST_CAMERA_UP, Snotbane.INPUT_GHOST_CAMERA_DOWN)) * speed
 
 	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		move_vector += move_input_vector_mouse * speed_mouse
@@ -79,9 +79,9 @@ func _process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if use_turn_interval:
-		if event.is_action_pressed(Mincuz.INPUT_GHOST_MOVE_UP):
+		if event.is_action_pressed(Snotbane.INPUT_GHOST_MOVE_UP):
 			self.global_rotation_degrees += turn_interval_degrees
-		elif event.is_action_pressed(Mincuz.INPUT_GHOST_MOVE_DOWN):
+		elif event.is_action_pressed(Snotbane.INPUT_GHOST_MOVE_DOWN):
 			self.global_rotation_degrees -= turn_interval_degrees
 	if event is InputEventMouseMotion:
 		move_input_vector_mouse += event.relative

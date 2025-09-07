@@ -7,7 +7,7 @@ static var GHOST_3D_SCENE : PackedScene = preload("uid://cwcqawp5x05vt")
 static var inst : DebugGhostAutoload
 
 static var debug_ghost_exists : bool :
-	get: return inst.get_tree().get_node_count_in_group(Mincuz.GHOST_GROUP) > 0
+	get: return inst.get_tree().get_node_count_in_group(Snotbane.GHOST_GROUP) > 0
 
 
 var ghost : Node
@@ -20,7 +20,7 @@ func _ready():
 
 
 func _input(event: InputEvent):
-	if event.is_action_pressed(Mincuz.INPUT_GHOST_TOGGLE):
+	if event.is_action_pressed(Snotbane.INPUT_GHOST_TOGGLE):
 		toggle_ghost()
 
 

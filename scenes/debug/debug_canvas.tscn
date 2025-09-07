@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://06v66pabg40h"]
 
-[ext_resource type="PackedScene" uid="uid://d24syunujwq7p" path="res://addons/mincuz/scenes/debug/debug_border.tscn" id="1_20at4"]
+[ext_resource type="PackedScene" uid="uid://d24syunujwq7p" path="res://addons/penny_godot/snotbane/scenes/debug/debug_border.tscn" id="1_20at4"]
 
 [node name="debug_canvas" type="CanvasLayer"]
 layer = 128
