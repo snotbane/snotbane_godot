@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://h05r4ilh3s40"
-path="res://.godot/imported/icon.png-7c1f16a8918d9a18bedc694410a70579.ctex"
+path="res://.godot/imported/icon.png-7f92f03d9d999c1269e40f287d1203f6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/penny_godot/snotbane/icon.png"
-dest_files=["res://.godot/imported/icon.png-7c1f16a8918d9a18bedc694410a70579.ctex"]
+source_file="res://addons/snotbane/icon.png"
+dest_files=["res://.godot/imported/icon.png-7f92f03d9d999c1269e40f287d1203f6.ctex"]
 
 [params]
 
