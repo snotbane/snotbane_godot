@@ -6,6 +6,9 @@ extends RootMotionView
 var root_velocity_global : Vector3
 
 func _process(delta: float) -> void:
+	var root_rotation := anim_mixer.get_root_motion_rotation()
+	character.quaternion *= root_rotation
+
 	var root_position := anim_mixer.get_root_motion_position()
 	root_velocity_global = Quaternion.from_euler(character.global_rotation) * root_position / delta
 
