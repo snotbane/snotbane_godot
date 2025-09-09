@@ -16,7 +16,7 @@ var previous_camera : Node
 
 func _ready():
 	inst = self
-	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	# Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 func _input(event: InputEvent):
