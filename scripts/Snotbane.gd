@@ -54,6 +54,27 @@ const SETTING_INPUT_DEBUG_GRID_TOGGLE := SETTING_INPUT_PREFIX + INPUT_DEBUG_GRID
 
 #endregion
 
+#region Nodes
+
+## Creates an [AudioStreamPlayer] that destroys itself after playing one sound. The kind of player it creates depends on the parent node. 3D parent will be a [AudioStreamPlayer3D], 2D parent will be a [AudioStreamPlayer2D], anything else will be [AudioStreamPlayer].
+static func create_one_shot_audio(parent: Node, stream: AudioStream, from_position: float = 0.0) -> Node:
+	var result : Node
+
+	if parent is Node3D: result = AudioStreamPlayer3D.new()
+	elif parent is Node2D: result = AudioStreamPlayer2D.new()
+	else: result = AudioStreamPlayer.new()
+
+	result.set_script(preload("uid://bvnerwx0x15br"))	## RescueAudioStreamPlayer.gd
+	result.stream = stream
+	result.finished.connect(result.queue_free)
+	parent.add_child(result)
+	result.play(from_position)
+
+	return result
+
+#endregion
+#region Input
+
 static func add_default_input_binding(binding_name: String, events: Array = [], deadzone := 0.2) -> void:
 	if ProjectSettings.get_setting(binding_name) != null: return
 
@@ -62,12 +83,17 @@ static func add_default_input_binding(binding_name: String, events: Array = [], 
 		"events": events,
 	})
 
+#endregion
+#region Time
+
 static var NOW_MILLI : float :
 	get: return Time.get_ticks_msec() * 0.00_1
 
 static var NOW_MICRO : float :
 	get: return Time.get_ticks_usec() * 0.00_000_1
 
+#endregion
+#region Math
 
 static func random_sign(random: RandomNumberGenerator = null) -> int:
 	return +1 if random.randi() % 2 else -1
@@ -131,3 +157,4 @@ static func x_y(v: Vector2, y: float = 0.0) -> Vector3:
 static func xy_(v: Vector2, z: float = 0.0) -> Vector3:
 	return Vector3(v.x, v.y, z)
 
+#endregion
