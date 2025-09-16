@@ -72,6 +72,14 @@ static func create_one_shot_audio(parent: Node, stream: AudioStream, from_positi
 
 	return result
 
+static func find_parent_of_type(node: Node, type: String) -> Node:
+	node = node.get_parent()
+	while node:
+		if node.get_class() == type or (node.get_script() and node.get_script().get_global_name() == type):
+			return node
+		node = node.get_parent()
+	return null
+
 #endregion
 #region Input
 
