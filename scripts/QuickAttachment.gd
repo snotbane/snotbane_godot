@@ -100,7 +100,7 @@ func get_alpha_curve() -> float:
 
 
 func process_2d(alpha: float) -> void:
-	get_parent().position = lerp(original_transform.get_origin(), Vector2.ZERO, alpha)
+	get_parent().position = lerp(original_transform.origin, Vector2.ZERO, alpha)
 	get_parent().rotation = lerp(original_transform.get_rotation(), 0.0, alpha)
 
 func process_3d(alpha: float) -> void:
