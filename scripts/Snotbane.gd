@@ -103,6 +103,9 @@ static var NOW_MICRO : float :
 #endregion
 #region Math
 
+static func clamp_range(x: float, __range__: Vector2) -> float:
+	return clampf(x, __range__.x, __range__.y)
+
 static func random_sign(random: RandomNumberGenerator = null) -> int:
 	return +1 if random.randi() % 2 else -1
 
