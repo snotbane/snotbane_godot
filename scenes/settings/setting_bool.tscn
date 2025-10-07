@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://tps0t4xo6ciq"]
+
+[ext_resource type="PackedScene" uid="uid://bkwb4fvsmoqb1" path="res://addons/snotbane/scenes/settings/setting.tscn" id="1_p41ra"]
+[ext_resource type="Script" uid="uid://cl55yeitd5xev" path="res://addons/snotbane/scenes/settings/setting_bool.gd" id="2_ytlx0"]
+
+[node name="setting_bool" node_paths=PackedStringArray("toggle") instance=ExtResource("1_p41ra")]
+script = ExtResource("2_ytlx0")
+toggle_value = false
+toggle = NodePath("hbox/control/check_button")
+
+[node name="check_button" type="CheckButton" parent="hbox/control" index="0"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[connection signal="toggled" from="hbox/control/check_button" to="." method="_set_control_to_value"]
