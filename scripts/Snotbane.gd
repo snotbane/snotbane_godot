@@ -72,12 +72,26 @@ static func create_one_shot_audio(parent: Node, stream: AudioStream, from_positi
 
 	return result
 
+## Searches up the parental hierarchy until it finds a [Node] whose class or script matches the specified [type].
 static func find_parent_of_type(node: Node, type: String) -> Node:
 	node = node.get_parent()
 	while node:
 		if node.get_class() == type or (node.get_script() and node.get_script().get_global_name() == type):
 			return node
 		node = node.get_parent()
+	return null
+
+## Searches down the child hierarchy until it finds a [Node] whose class or script matches the specified [type].
+static func find_child_of_type(node: Node, type: String, recursive: bool = false) -> Node:
+	for child in node.get_children():
+		if child.get_class() == type or (child.get_script() and child.get_script().get_global_name() == type):
+			return child
+		if not recursive: continue
+
+		var grandchild := find_child_of_type(child, type, recursive)
+		if grandchild == null: continue
+
+		return grandchild
 	return null
 
 #endregion
