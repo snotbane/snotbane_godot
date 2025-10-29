@@ -1,34 +1,70 @@
 class_name DebugDraw3D extends Node3D
 
+static var POINT_MESH : SphereMesh
+static var MESH_MATERIAL : StandardMaterial3D
+
 static var inst : DebugDraw3D
 
-static func path_3d(id: StringName, points: PackedVector3Array, point_size: float = 0.0) -> void:
-	inst._path_3d(id, points, point_size)
+static func _static_init() -> void:
+	MESH_MATERIAL = StandardMaterial3D.new()
+	MESH_MATERIAL.flags_unshaded = true
+	MESH_MATERIAL.albedo_color = Color.WHITE
 
-static func line_3d(id: StringName, a: Vector3, b: Vector3, head_size: float = 0.0) -> void:
-	inst._line_3d(id, a, b, head_size)
+	POINT_MESH = SphereMesh.new()
+	POINT_MESH.radial_segments = 16
+	POINT_MESH.rings = 8
+
+static func point(id: StringName, point: Vector3, radius = 0.125) -> Node3D:
+	return inst._point(id, point, radius)
+
+static func path(id: StringName, points: PackedVector3Array = [], point_size = null) -> Node3D:
+	return inst._path(id, points, point_size)
+
+static func line(id: StringName, a: Vector3, b: Vector3, head_size: float = 0.0) -> Node3D:
+	return inst._line(id, a, b, head_size)
 
 static func clear(id: StringName) -> void:
 	inst.find_child(id).queue_free()
 
+static func set_color(id: StringName, color: Color) -> void:
+	var node := inst.registry.get(id)
+	if node == null: return
+
+	var material : StandardMaterial3D = node.get_meta(&"_material")
+	material.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED if color.a >= 1.0 else BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.albedo_color = color
+
+var registry : Dictionary[StringName, Node3D]
+
 func _ready() -> void:
 	inst = self
 
-func _path_3d(id: StringName, points: PackedVector3Array, point_size: float = 0.0) -> Node3D:
-	var result : Node3D = find_child(id)
+func _point(id: StringName, point: Vector3, radius) -> Node3D:
+	var result : Node3D = registry.get(id)
+	var create := result == null
+	if create:
+		result = MeshInstance3D.new()
+		registry[id] = result
+		result.mesh = POINT_MESH
+		result.material_override = MESH_MATERIAL.duplicate()
+		result.set_meta(&"_material", result.material_override)
+		add_child(result)
+
+	result.position = point
+	result.scale = Vector3.ONE * maxf(0.0, radius * 2)
+
+	return result
+
+func _path(id: StringName, points: PackedVector3Array, point_size = null) -> Node3D:
+	var result : Node3D = registry.get(id)
 	var create := result == null
 	if create:
 		result = Node3D.new()
-		result.name = id
-
-		var material := StandardMaterial3D.new()
-		material.flags_unshaded = true
-		material.albedo_color = Color.WHITE
-		result.set_meta(&"_material", material)
-
+		registry[id] = result
+		result.set_meta(&"_material", MESH_MATERIAL.duplicate())
 		add_child(result)
 
-	var path_mesh : ImmediateMesh = ImmediateMesh.new() if create else result.get_meta(&"_path_mesh")
+	var path_mesh : ImmediateMesh = ImmediateMesh.new() if create else result.get_child(0).mesh
 	path_mesh.clear_surfaces()
 	path_mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, result.get_meta(&"_material"))
 	for i in points.size():	path_mesh.surface_add_vertex(points[i])
@@ -41,61 +77,70 @@ func _path_3d(id: StringName, points: PackedVector3Array, point_size: float = 0.
 		path.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		result.add_child(path)
 
-		var points_mesh := SphereMesh.new()
-		points_mesh.radial_segments = 16
-		points_mesh.rings = 8
-		points_mesh.radius = point_size
-		points_mesh.height = point_size * 2
-		points_mesh.material = result.get_meta(&"_material")
-
 		points_multimesh = MultiMeshInstance3D.new()
 		points_multimesh.multimesh = MultiMesh.new()
 		points_multimesh.multimesh.transform_format = MultiMesh.TRANSFORM_3D
-		points_multimesh.multimesh.mesh = points_mesh
+		points_multimesh.multimesh.mesh = POINT_MESH
 		points_multimesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		points_multimesh.layers = result.layers
+		points_multimesh.material_override = result.get_meta(&"_material")
 		result.add_child(points_multimesh)
+
+		if point_size == null:
+			point_size = 0.0
+
 	else:
 		points_multimesh = result.get_child(1)
 
+	if point_size == null:
+		point_size = result.get_meta(&"point_size", 0.0)
+	else:
+		result.set_meta(&"point_size", point_size)
+
 	if point_size > 0.0:
 		points_multimesh.multimesh.instance_count = points.size()
-		for i in points.size():	points_multimesh.multimesh.set_instance_transform(i, Transform3D(Basis(), points[i]))
+		for i in points.size():	points_multimesh.multimesh.set_instance_transform(i, Transform3D(Basis.from_scale(Vector3.ONE * point_size), points[i]))
 	else:
 		points_multimesh.multimesh.instance_count = 0
 
 	return result
 
 
-func _line_3d(id: StringName, a: Vector3, b: Vector3, head_size: float = 0.0) -> Node3D:
-	var create := find_child(id) == null
+func _line(id: StringName, a: Vector3, b: Vector3, head_size: float = 0.0) -> Node3D:
+	var create := not registry.has(id)
 
 	var direction := (b - a).normalized()
 	var length := a.distance_to(b)
 	var head_length := clampf(head_size, 0.0, length)
 
-	var result := _path_3d(id, [a, a + direction * (length - head_length)], 0.0)
+	var result := _path(id, [a, a + direction * (length - head_length)], 0.0)
 
-	var head : MeshInstance3D
+	var head : Node3D
+	var head_mesh : CylinderMesh
 	if create:
-		var head_mesh := CylinderMesh.new()
+		head_mesh = CylinderMesh.new()
 		head_mesh.cap_top = false
 		head_mesh.top_radius = 0.0
 		head_mesh.radial_segments = 16
 		head_mesh.rings = 3
-		head_mesh.height = head_length
-		head_mesh.bottom_radius = head_mesh.height * 0.5
 		head_mesh.material = result.get_meta(&"_material")
 
-		head = MeshInstance3D.new()
-		head.mesh = head_mesh
+		head = Node3D.new()
+		var mesh_inst := MeshInstance3D.new()
+		mesh_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mesh_inst.mesh = head_mesh
+		mesh_inst.rotation_degrees.x = -90
 
+		head.add_child(mesh_inst)
 		result.add_child(head)
 	else:
 		head = result.get_child(2)
+		head_mesh = head.get_child(0).mesh
 
-	head.look_at_from_position(
-		direction * (length - (head_length * 0.5)),
+	head_mesh.height = head_length
+	head_mesh.bottom_radius = head_mesh.height * 0.25
+
+	head.global_position = a + direction * (length - (head_length * 0.5))
+	head.look_at(
 		head.global_position + direction,
 		Vector3.FORWARD if direction.is_equal_approx(Vector3.UP) else Vector3.UP
 	)
