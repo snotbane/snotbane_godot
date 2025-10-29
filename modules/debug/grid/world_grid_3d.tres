@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://bm5n28m8boujc"]
 
-[ext_resource type="Shader" uid="uid://dgx8is1uf2ug0" path="res://addons/penny_godot/snotbane/scenes/debug/grid/world_grid_3d.gdshader" id="1_fm0et"]
+[ext_resource type="Shader" uid="uid://dgx8is1uf2ug0" path="res://addons/snotbane/modules/debug/grid/world_grid_3d.gdshader" id="1_fm0et"]
 
 [resource]
 render_priority = 0

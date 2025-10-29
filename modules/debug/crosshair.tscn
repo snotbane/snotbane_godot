@@ -1,9 +1,10 @@
 [gd_scene load_steps=3 format=3 uid="uid://dsnj7vcelmovd"]
 
-[ext_resource type="Shader" uid="uid://c2ld7hbu71qgv" path="res://addons/penny_godot/snotbane/shaders/canvas_invert_screen.tres" id="1_g2iss"]
+[ext_resource type="Shader" uid="uid://c05q8ugcnven7" path="res://addons/snotbane/shaders/screen_invert_canvas.gdshader" id="1_lapv5"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_yo73g"]
-shader = ExtResource("1_g2iss")
+shader = ExtResource("1_lapv5")
+shader_parameter/grayscale = true
 
 [node name="crosshair" type="Control"]
 layout_mode = 3

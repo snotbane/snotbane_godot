@@ -1,8 +1,8 @@
 [gd_scene load_steps=7 format=3 uid="uid://d24syunujwq7p"]
 
-[ext_resource type="Texture2D" uid="uid://dvp3hlokwd4ac" path="res://addons/penny_godot/snotbane/textures/marquee_border.png" id="1_uuix4"]
-[ext_resource type="Shader" uid="uid://c2ld7hbu71qgv" path="res://addons/penny_godot/snotbane/shaders/canvas_invert_screen.tres" id="2_0jhs0"]
-[ext_resource type="PackedScene" uid="uid://dsnj7vcelmovd" path="res://addons/penny_godot/snotbane/scenes/debug/crosshair.tscn" id="2_uywso"]
+[ext_resource type="Texture2D" uid="uid://dvp3hlokwd4ac" path="res://addons/snotbane/textures/marquee_border.png" id="1_uuix4"]
+[ext_resource type="Shader" uid="uid://c05q8ugcnven7" path="res://addons/snotbane/shaders/screen_invert_canvas.gdshader" id="2_0jhs0"]
+[ext_resource type="PackedScene" uid="uid://dsnj7vcelmovd" path="res://addons/snotbane/modules/debug/crosshair.tscn" id="2_uywso"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ijnsd"]
 bg_color = Color(1, 1, 1, 1)
