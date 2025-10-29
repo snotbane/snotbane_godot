@@ -2,6 +2,7 @@ class_name DebugDraw3D extends Node3D
 
 static var POINT_MESH : SphereMesh
 static var MESH_MATERIAL : StandardMaterial3D
+# static var TEXT_MATERIAL : Label
 
 static var inst : DebugDraw3D
 
@@ -14,8 +15,12 @@ static func _static_init() -> void:
 	POINT_MESH.radial_segments = 16
 	POINT_MESH.rings = 8
 
+
 static func point(id: StringName, point: Vector3, radius = 0.125) -> Node3D:
 	return inst._point(id, point, radius)
+
+static func text(id: StringName, point: Vector3, text: String, radius = 0.0, pixel_size: float = 0.0005, fixed_size: bool = true) -> Node3D:
+	return inst._text(id, point, text, radius, pixel_size, fixed_size)
 
 static func path(id: StringName, points: PackedVector3Array = [], point_size = null) -> Node3D:
 	return inst._path(id, points, point_size)
@@ -42,18 +47,49 @@ func _ready() -> void:
 func _point(id: StringName, point: Vector3, radius) -> Node3D:
 	var result : Node3D = registry.get(id)
 	var create := result == null
+
+	var mesh_inst: MeshInstance3D
 	if create:
-		result = MeshInstance3D.new()
+		result = Node3D.new()
 		registry[id] = result
-		result.mesh = POINT_MESH
-		result.material_override = MESH_MATERIAL.duplicate()
-		result.set_meta(&"_material", result.material_override)
+
+		mesh_inst = MeshInstance3D.new()
+		mesh_inst.mesh = POINT_MESH
+		mesh_inst.material_override = MESH_MATERIAL.duplicate()
+
+		result.set_meta(&"_material", mesh_inst.material_override)
+		result.add_child(mesh_inst)
 		add_child(result)
+	else:
+		mesh_inst = result.get_child(0)
 
 	result.position = point
-	result.scale = Vector3.ONE * maxf(0.0, radius * 2)
+	mesh_inst.scale = Vector3.ONE * maxf(0.0, radius * 2)
 
 	return result
+
+func _text(id: StringName, point: Vector3, text: String, radius, pixel_size: float, fixed_size: bool) -> Node3D:
+	var create := not registry.has(id)
+	var result : Node3D = _point(id, point, radius)
+
+	var label : Label3D
+	if create:
+		label = Label3D.new()
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label.double_sided = false
+
+		result.add_child(label)
+	else:
+		label = result.get_child(1)
+
+	label.text = text
+	label.fixed_size = fixed_size
+	label.pixel_size = pixel_size
+	label.modulate = result.get_child(0).material_override.albedo_color
+	label.position = Vector3.UP * (radius + (0.25 if radius > 0.0 else 0.0))
+
+	return result
+
 
 func _path(id: StringName, points: PackedVector3Array, point_size = null) -> Node3D:
 	var result : Node3D = registry.get(id)
@@ -106,12 +142,11 @@ func _path(id: StringName, points: PackedVector3Array, point_size = null) -> Nod
 
 
 func _line(id: StringName, a: Vector3, b: Vector3, head_size: float = 0.0) -> Node3D:
-	var create := not registry.has(id)
-
 	var direction := (b - a).normalized()
 	var length := a.distance_to(b)
 	var head_length := clampf(head_size, 0.0, length)
 
+	var create := not registry.has(id)
 	var result := _path(id, [a, a + direction * (length - head_length)], 0.0)
 
 	var head : Node3D
