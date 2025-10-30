@@ -16,9 +16,6 @@ var _refresh_duration : float = 0.1
 		if target != null:
 			target.refresh_duration = _refresh_duration
 
-
-
-
 ## If enabled, [member target_position] will be updated once every [member refresh_duration] seconds.
 var continuous_update : bool :
 	get: return refresh_duration > 0.0

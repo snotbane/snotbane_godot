@@ -2,7 +2,6 @@ class_name DebugDraw3D extends Node3D
 
 static var POINT_MESH : SphereMesh
 static var MESH_MATERIAL : StandardMaterial3D
-# static var TEXT_MATERIAL : Label
 
 static var inst : DebugDraw3D
 
@@ -10,6 +9,7 @@ static func _static_init() -> void:
 	MESH_MATERIAL = StandardMaterial3D.new()
 	MESH_MATERIAL.flags_unshaded = true
 	MESH_MATERIAL.albedo_color = Color.WHITE
+
 
 	POINT_MESH = SphereMesh.new()
 	POINT_MESH.radial_segments = 16
@@ -28,6 +28,12 @@ static func path(id: StringName, points: PackedVector3Array = [], point_size = n
 static func line(id: StringName, a: Vector3, b: Vector3, head_size: float = 0.0) -> Node3D:
 	return inst._line(id, a, b, head_size)
 
+static func shape(id: StringName, transform: Transform3D, shape: Shape3D) -> Node3D:
+	return inst._shape(id, transform, shape)
+
+static func collision(collision: KinematicCollision3D, color: Color = Color(1, 1, 1, 0.05), duration: float = 1.0) -> Node3D:
+	return inst._collision(collision, color, duration)
+
 static func clear(id: StringName) -> void:
 	inst.find_child(id).queue_free()
 
@@ -44,6 +50,14 @@ var registry : Dictionary[StringName, Node3D]
 func _ready() -> void:
 	inst = self
 
+func _mesh(mesh: Mesh, material: Material = MESH_MATERIAL.duplicate()) -> MeshInstance3D:
+	var result := MeshInstance3D.new()
+	result.mesh = mesh
+	result.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	result.material_override = material
+
+	return result
+
 func _point(id: StringName, point: Vector3, radius) -> Node3D:
 	var result : Node3D = registry.get(id)
 	var create := result == null
@@ -53,12 +67,10 @@ func _point(id: StringName, point: Vector3, radius) -> Node3D:
 		result = Node3D.new()
 		registry[id] = result
 
-		mesh_inst = MeshInstance3D.new()
-		mesh_inst.mesh = POINT_MESH
-		mesh_inst.material_override = MESH_MATERIAL.duplicate()
+		mesh_inst = _mesh(POINT_MESH)
+		result.add_child(mesh_inst)
 
 		result.set_meta(&"_material", mesh_inst.material_override)
-		result.add_child(mesh_inst)
 		add_child(result)
 	else:
 		mesh_inst = result.get_child(0)
@@ -108,10 +120,8 @@ func _path(id: StringName, points: PackedVector3Array, point_size = null) -> Nod
 
 	var points_multimesh : MultiMeshInstance3D
 	if create:
-		var path := MeshInstance3D.new()
-		path.mesh = path_mesh
-		path.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		result.add_child(path)
+		var mesh_inst := _mesh(path_mesh, result.get_meta(&"_material"))
+		result.add_child(mesh_inst)
 
 		points_multimesh = MultiMeshInstance3D.new()
 		points_multimesh.multimesh = MultiMesh.new()
@@ -157,12 +167,9 @@ func _line(id: StringName, a: Vector3, b: Vector3, head_size: float = 0.0) -> No
 		head_mesh.top_radius = 0.0
 		head_mesh.radial_segments = 16
 		head_mesh.rings = 3
-		head_mesh.material = result.get_meta(&"_material")
 
 		head = Node3D.new()
-		var mesh_inst := MeshInstance3D.new()
-		mesh_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		mesh_inst.mesh = head_mesh
+		var mesh_inst := _mesh(head_mesh, result.get_meta(&"_material"))
 		mesh_inst.rotation_degrees.x = -90
 
 		head.add_child(mesh_inst)
@@ -179,5 +186,55 @@ func _line(id: StringName, a: Vector3, b: Vector3, head_size: float = 0.0) -> No
 		head.global_position + direction,
 		Vector3.FORWARD if direction.is_equal_approx(Vector3.UP) else Vector3.UP
 	)
+
+	return result
+
+func _shape(id: StringName, transform: Transform3D, shape: Shape3D) -> Node3D:
+	var result := registry.get(id, null)
+	var create := result == null
+
+	var mesh_inst : MeshInstance3D
+	if create:
+		result = Node3D.new()
+		registry[id] = result
+		add_child(result)
+
+		mesh_inst = _mesh(shape.get_debug_mesh())
+		result.add_child(mesh_inst)
+
+		result.set_meta(&"_material", mesh_inst.material_override)
+
+
+		set_color(id, Color(1, 1, 1, 0.05))
+	else:
+		mesh_inst = result.get_child(0)
+
+	mesh_inst.transform = transform
+
+	return result
+
+func _collision(collision: KinematicCollision3D, color: Color, duration: float) -> Node3D:
+	var result = Node3D.new()
+	add_child(result)
+
+	for i in collision.get_collision_count():
+		var shape : Shape3D = collision.get_collider_shape(i)
+
+		var material : StandardMaterial3D = MESH_MATERIAL.duplicate()
+		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+		material.albedo_color = color
+
+		var mesh_inst := _mesh(shape.get_debug_mesh())
+		result.add_child(mesh_inst)
+
+	if duration > 0.0:
+		var timer := Timer.new()
+		timer.wait_time = duration
+		timer.autostart = true
+		timer.timeout.connect(result.queue_free)
+		result.add_child(timer)
+	elif duration == 0.0:
+		result.queue_free.call_deferred()
+		return null
 
 	return result
