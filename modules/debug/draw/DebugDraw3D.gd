@@ -1,240 +1,328 @@
 class_name DebugDraw3D extends Node3D
 
-static var POINT_MESH : SphereMesh
-static var MESH_MATERIAL : StandardMaterial3D
+const POINT_MESH : Mesh = preload("uid://cnkvd3t13kcod")
+const ARROW_MESH : Mesh = preload("uid://bak40cp1rwhko")
+const MESH_MATERIAL : StandardMaterial3D = preload("uid://bdosbg5iohx24")
 
 static var inst : DebugDraw3D
 
-static func _static_init() -> void:
-	MESH_MATERIAL = StandardMaterial3D.new()
-	MESH_MATERIAL.flags_unshaded = true
-	MESH_MATERIAL.albedo_color = Color.WHITE
+class _Generic extends Node3D:
+	var _color : Color
+	var color : Color :
+		get: return _color
+		set(value):
+			if _color == value: return
+			_color = value
+			material.albedo_color = _color
+			_on_color_set()
+	func _on_color_set() -> void: pass
+	var opacity : float :
+		get: return color.a
+		set(value): color = Color(color.r, color.r, color.b, value)
+
+	var timer : Timer
+	var _duration : float
+	var duration : float :
+		get: return _duration
+		set(value):
+			value = maxf(0.0, value)
+			if _duration == value: return
+			_duration = value
+
+			if _duration > 0.0:
+				if timer.is_inside_tree(): timer.start()
+				else: timer.autostart = true
+				timer.wait_time = _duration
+			else:
+				if timer.is_inside_tree(): timer.stop()
+				else: timer.autostart = false
+
+	var material : StandardMaterial3D
+
+	func _init(__top_level__: bool) -> void:
+		top_level = __top_level__
+		material = DebugDraw3D.MESH_MATERIAL.duplicate()
+
+		timer = Timer.new()
+		timer.autostart = false
+		timer.timeout.connect(queue_free)
+
+	func _ready() -> void:
+		add_child(timer)
+
+class _Mesh extends DebugDraw3D._Generic:
+	var mesh_inst : MeshInstance3D
+
+	func _init(__top_level__: bool, __mesh__: Mesh) -> void:
+		super._init(__top_level__)
+
+		mesh_inst = MeshInstance3D.new()
+		mesh_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mesh_inst.material_override = material
+		mesh_inst.mesh = __mesh__
 
 
-	POINT_MESH = SphereMesh.new()
-	POINT_MESH.radial_segments = 16
-	POINT_MESH.rings = 8
+	func _ready() -> void:
+		super._ready()
+
+		add_child(mesh_inst)
+
+class _MultiMesh extends DebugDraw3D._Generic:
+	var multimesh_inst : MultiMeshInstance3D
+
+	func _init(__top_level__: bool, __mesh__: Mesh) -> void:
+		super._init(__top_level__)
+
+		multimesh_inst = MultiMeshInstance3D.new()
+		multimesh_inst.multimesh = MultiMesh.new()
+		multimesh_inst.multimesh.transform_format = MultiMesh.TRANSFORM_3D
+		multimesh_inst.multimesh.mesh = __mesh__
+		multimesh_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		multimesh_inst.material_override = material
 
 
-static func point(id: StringName, point: Vector3, radius = 0.125) -> Node3D:
-	return inst._point(id, point, radius)
+	func _ready() -> void:
+		super._ready()
 
-static func text(id: StringName, point: Vector3, text: String, radius = 0.0, pixel_size: float = 0.0005, fixed_size: bool = true) -> Node3D:
-	return inst._text(id, point, text, radius, pixel_size, fixed_size)
+		add_child(multimesh_inst)
 
-static func path(id: StringName, points: PackedVector3Array = [], point_size = null) -> Node3D:
-	return inst._path(id, points, point_size)
+class Point extends DebugDraw3D._Mesh:
+	var _radius : float
+	var radius : float :
+		get: return _radius
+		set(value):
+			value = maxf(value, 0.0)
+			if _radius == value: return
+			_radius = value
+			mesh_inst.scale = Vector3.ONE * value
 
-static func line(id: StringName, a: Vector3, b: Vector3, head_size: float = 0.0) -> Node3D:
-	return inst._line(id, a, b, head_size)
+	func _init(__top_level__: bool = true, __position__: Vector3 = Vector3.ZERO, __radius__: float = 0.25) -> void:
+		super._init(__top_level__, DebugDraw3D.POINT_MESH)
 
-static func shape(id: StringName, transform: Transform3D, shape: Shape3D) -> Node3D:
-	return inst._shape(id, transform, shape)
+		position = __position__
+		radius = __radius__
 
-static func collision(collision: KinematicCollision3D, color: Color = Color(1, 1, 1, 0.05), duration: float = 1.0) -> Node3D:
-	return inst._collision(collision, color, duration)
+class Text extends DebugDraw3D.Point:
+	func _on_color_set() -> void:
+		label.modulate = color
 
-static func clear(id: StringName) -> void:
-	inst.find_child(id).queue_free()
-
-static func set_color(id: StringName, color: Color) -> void:
-	var node := inst.registry.get(id)
-	if node == null: return
-
-	var material : StandardMaterial3D = node.get_meta(&"_material")
-	material.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED if color.a >= 1.0 else BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.albedo_color = color
-
-var registry : Dictionary[StringName, Node3D]
-
-func _ready() -> void:
-	inst = self
-
-func _mesh(mesh: Mesh, material: Material = MESH_MATERIAL.duplicate()) -> MeshInstance3D:
-	var result := MeshInstance3D.new()
-	result.mesh = mesh
-	result.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	result.material_override = material
-
-	return result
-
-func _point(id: StringName, point: Vector3, radius) -> Node3D:
-	var result : Node3D = registry.get(id)
-	var create := result == null
-
-	var mesh_inst: MeshInstance3D
-	if create:
-		result = Node3D.new()
-		registry[id] = result
-
-		mesh_inst = _mesh(POINT_MESH)
-		result.add_child(mesh_inst)
-
-		result.set_meta(&"_material", mesh_inst.material_override)
-		add_child(result)
-	else:
-		mesh_inst = result.get_child(0)
-
-	result.position = point
-	mesh_inst.scale = Vector3.ONE * maxf(0.0, radius * 2)
-
-	return result
-
-func _text(id: StringName, point: Vector3, text: String, radius, pixel_size: float, fixed_size: bool) -> Node3D:
-	var create := not registry.has(id)
-	var result : Node3D = _point(id, point, radius)
+	var text : String :
+		get: return label.text
+		set(value):
+			if text == value: return
+			label.text = value
 
 	var label : Label3D
-	if create:
+
+	func _init(__top_level__: bool = true, __position__: Vector3 = Vector3.ZERO, __text__: String = "") -> void:
+		super._init(__top_level__, __position__, 0.125)
+
 		label = Label3D.new()
 		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		label.double_sided = false
+		label.fixed_size = true
+		label.pixel_size = 0.0005
+		label.modulate = color
+		label.position = Vector3.UP * radius * 1.25
 
-		result.add_child(label)
-	else:
-		label = result.get_child(1)
+		text = __text__
 
-	label.text = text
-	label.fixed_size = fixed_size
-	label.pixel_size = pixel_size
-	label.modulate = result.get_child(0).material_override.albedo_color
-	label.position = Vector3.UP * (radius + (0.25 if radius > 0.0 else 0.0))
+	func _ready() -> void:
+		super._ready()
 
-	return result
+		add_child(label)
 
+class MultiPoint extends DebugDraw3D._MultiMesh:
+	var _points_radius : float
+	var points_radius : float :
+		get: return _points_radius
+		set(value):
+			value = maxf(value, 0.0)
+			if _points_radius == value: return
+			_points_radius = value
 
-func _path(id: StringName, points: PackedVector3Array, point_size = null) -> Node3D:
-	var result : Node3D = registry.get(id)
-	var create := result == null
-	if create:
-		result = Node3D.new()
-		registry[id] = result
-		result.set_meta(&"_material", MESH_MATERIAL.duplicate())
-		add_child(result)
+			_refresh_multimesh()
 
-	var path_mesh : ImmediateMesh = ImmediateMesh.new() if create else result.get_child(0).mesh
-	path_mesh.clear_surfaces()
-	path_mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, result.get_meta(&"_material"))
-	for i in points.size():	path_mesh.surface_add_vertex(points[i])
-	path_mesh.surface_end()
+	var _points : PackedVector3Array
+	var points : PackedVector3Array :
+		get: return _points
+		set(value):
+			_points = value
 
-	var points_multimesh : MultiMeshInstance3D
-	if create:
-		var mesh_inst := _mesh(path_mesh, result.get_meta(&"_material"))
-		result.add_child(mesh_inst)
-
-		points_multimesh = MultiMeshInstance3D.new()
-		points_multimesh.multimesh = MultiMesh.new()
-		points_multimesh.multimesh.transform_format = MultiMesh.TRANSFORM_3D
-		points_multimesh.multimesh.mesh = POINT_MESH
-		points_multimesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		points_multimesh.material_override = result.get_meta(&"_material")
-		result.add_child(points_multimesh)
-
-		if point_size == null:
-			point_size = 0.0
-
-	else:
-		points_multimesh = result.get_child(1)
-
-	if point_size == null:
-		point_size = result.get_meta(&"point_size", 0.0)
-	else:
-		result.set_meta(&"point_size", point_size)
-
-	if point_size > 0.0:
-		points_multimesh.multimesh.instance_count = points.size()
-		for i in points.size():	points_multimesh.multimesh.set_instance_transform(i, Transform3D(Basis.from_scale(Vector3.ONE * point_size), points[i]))
-	else:
-		points_multimesh.multimesh.instance_count = 0
-
-	return result
+			_refresh_multimesh()
+			_on_points_set()
+	func _on_points_set() -> void: pass
 
 
-func _line(id: StringName, a: Vector3, b: Vector3, head_size: float = 0.0) -> Node3D:
-	var direction := (b - a).normalized()
-	var length := a.distance_to(b)
-	var head_length := clampf(head_size, 0.0, length)
+	func _refresh_multimesh() -> void:
+		multimesh_inst.multimesh.instance_count = _points.size() if _points_radius > 0.0 else 0
+		for i in multimesh_inst.multimesh.instance_count:
+			multimesh_inst.multimesh.set_instance_transform(i, Transform3D(Basis.from_scale(Vector3.ONE * points_radius), _points[i]))
 
-	var create := not registry.has(id)
-	var result := _path(id, [a, a + direction * (length - head_length)], 0.0)
 
-	var head : Node3D
-	var head_mesh : CylinderMesh
-	if create:
-		head_mesh = CylinderMesh.new()
-		head_mesh.cap_top = false
-		head_mesh.top_radius = 0.0
-		head_mesh.radial_segments = 16
-		head_mesh.rings = 3
+	func _init(__top_level__: bool = true, __points__: PackedVector3Array = [], __points_radius__: float = 0.125) -> void:
+		super._init(__top_level__, POINT_MESH)
 
-		head = Node3D.new()
-		var mesh_inst := _mesh(head_mesh, result.get_meta(&"_material"))
-		mesh_inst.rotation_degrees.x = -90
+		points = __points__
 
-		head.add_child(mesh_inst)
-		result.add_child(head)
-	else:
-		head = result.get_child(2)
-		head_mesh = head.get_child(0).mesh
-
-	head_mesh.height = head_length
-	head_mesh.bottom_radius = head_mesh.height * 0.25
-
-	head.global_position = a + direction * (length - (head_length * 0.5))
-	head.look_at(
-		head.global_position + direction,
-		Vector3.FORWARD if direction.is_equal_approx(Vector3.UP) else Vector3.UP
-	)
-
-	return result
-
-func _shape(id: StringName, transform: Transform3D, shape: Shape3D) -> Node3D:
-	var result := registry.get(id, null)
-	var create := result == null
+class Path extends DebugDraw3D.MultiPoint:
+	func _on_points_set() -> void:
+		mesh_inst.mesh.clear_surfaces()
+		if points.size() == 0: return
+		mesh_inst.mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
+		for i in points.size():
+			mesh_inst.mesh.surface_add_vertex(points[i])
+		mesh_inst.mesh.surface_end()
 
 	var mesh_inst : MeshInstance3D
-	if create:
-		result = Node3D.new()
-		registry[id] = result
-		add_child(result)
 
-		mesh_inst = _mesh(shape.get_debug_mesh())
-		result.add_child(mesh_inst)
+	func _init(__top_level__: bool = true, __points__: PackedVector3Array = [], __points_radius__: float = 0.0) -> void:
+		mesh_inst = MeshInstance3D.new()
+		mesh_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		mesh_inst.mesh = ImmediateMesh.new()
 
-		result.set_meta(&"_material", mesh_inst.material_override)
+		super._init(__top_level__, __points__, __points_radius__)
+
+		mesh_inst.material_override = material
+
+	func _ready() -> void:
+		super._ready()
+
+		add_child(mesh_inst)
+
+class Ray extends DebugDraw3D._Generic:
+	var _max_head_size : float
+	var max_head_size : float :
+		get: return _max_head_size
+		set(value):
+			if _max_head_size == value: return
+			_max_head_size = value
+			_refresh()
+	var _origin : Vector3
+	var origin : Vector3 :
+		get: return _origin
+		set(value):
+			if _origin == value: return
+			_origin = value
+			_refresh()
+	var _target : Vector3
+	var target : Vector3 :
+		get: return _target
+		set(value):
+			if _target == value: return
+			_target = value
+			_refresh()
+	var normal : Vector3 :
+		get: return (target - origin).normalized()
+		set(value): target = origin + value * length
+	var length : float :
+		get: return origin.distance_to(target)
+		set(value): target = origin + normal * value
+	func _refresh() -> void:
+		if not is_inside_tree(): return
+
+		var head_length := clampf(max_head_size, 0.0, length)
+
+		line_mesh_inst.mesh.clear_surfaces()
+		line_mesh_inst.mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
+		line_mesh_inst.mesh.surface_add_vertex(origin)
+		line_mesh_inst.mesh.surface_add_vertex(origin + normal * (length - head_length))
+		# line_mesh_inst.mesh.surface_add_vertex(origin.lerp(target, (1.0 - head_length) / length))
+		line_mesh_inst.mesh.surface_end()
+
+		head_offset.scale = Vector3.ONE * head_length
+		head_offset.global_position = origin + normal * (length - (head_length * 0.5))
+		# head_offset.global_position = origin.lerp(target, (1.0 - (head_length * 0.5) / length))
+		head_offset.look_at(
+			head_offset.global_position + normal,
+			Vector3.FORWARD if normal.is_equal_approx(Vector3.UP) else Vector3.UP
+		)
+
+	var head_offset : Node3D
+	var head_mesh_inst : MeshInstance3D
+	var line_mesh_inst : MeshInstance3D
+
+	static func from_global_to_global(__origin__:= Vector3.ZERO, __target__:= Vector3.ZERO, __head_size__: float = 0.25) -> Ray:
+		return Ray.new(true, __origin__, __target__, __head_size__)
+
+	static func to_direction(__normal__: Vector3, __length__: float = 1.0, __head_size__: float = 0.25) -> Ray:
+		return Ray.new(false, Vector3.ZERO, __normal__ * __length__, __head_size__)
+
+	func _init(__top_level__: bool, __origin__: Vector3, __target__: Vector3, __head_size__: float = 0.25) -> void:
+		super._init(__top_level__)
+
+		origin = __origin__
+		target = __target__
+
+		head_offset = Node3D.new()
+
+		head_mesh_inst = MeshInstance3D.new()
+		head_mesh_inst.rotation_degrees.x = -90.0
+		head_mesh_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		head_mesh_inst.material_override = material
+		head_mesh_inst.mesh = DebugDraw3D.ARROW_MESH
+
+		line_mesh_inst = MeshInstance3D.new()
+		line_mesh_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		line_mesh_inst.material_override = material
+		line_mesh_inst.mesh = ImmediateMesh.new()
+
+	func _ready() -> void:
+		super._ready()
+
+		head_offset.add_child(head_mesh_inst)
+		add_child(head_offset)
+		add_child(line_mesh_inst)
+
+		_refresh()
 
 
-		set_color(id, Color(1, 1, 1, 0.05))
-	else:
-		mesh_inst = result.get_child(0)
+# func _shape(id: StringName, transform: Transform3D, shape: Shape3D) -> Node3D:
+# 	var result := registry.get(id, null)
+# 	var create := result == null
 
-	mesh_inst.transform = transform
+# 	var mesh_inst : MeshInstance3D
+# 	if create:
+# 		result = Node3D.new()
+# 		registry[id] = result
+# 		add_child(result)
 
-	return result
+# 		mesh_inst = _mesh(shape.get_debug_mesh())
+# 		result.add_child(mesh_inst)
 
-func _collision(collision: KinematicCollision3D, color: Color, duration: float) -> Node3D:
-	var result = Node3D.new()
-	add_child(result)
+# 		result.set_meta(&"_material", mesh_inst.material_override)
 
-	for i in collision.get_collision_count():
-		var shape : Shape3D = collision.get_collider_shape(i)
 
-		var material : StandardMaterial3D = MESH_MATERIAL.duplicate()
-		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
-		material.albedo_color = color
+# 		set_color(id, Color(1, 1, 1, 0.05))
+# 	else:
+# 		mesh_inst = result.get_child(0)
 
-		var mesh_inst := _mesh(shape.get_debug_mesh())
-		result.add_child(mesh_inst)
+# 	mesh_inst.transform = transform
 
-	if duration > 0.0:
-		var timer := Timer.new()
-		timer.wait_time = duration
-		timer.autostart = true
-		timer.timeout.connect(result.queue_free)
-		result.add_child(timer)
-	elif duration == 0.0:
-		result.queue_free.call_deferred()
-		return null
+# 	return result
 
-	return result
+# func _collision(collision: KinematicCollision3D, color: Color, duration: float) -> Node3D:
+# 	var result = Node3D.new()
+# 	add_child(result)
+
+# 	for i in collision.get_collision_count():
+# 		var shape : Shape3D = collision.get_collider_shape(i)
+
+# 		var material : StandardMaterial3D = MESH_MATERIAL.duplicate()
+# 		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
+# 		material.albedo_color = color
+
+# 		var mesh_inst := _mesh(shape.get_debug_mesh())
+# 		result.add_child(mesh_inst)
+
+# 	if duration > 0.0:
+# 		var timer := Timer.new()
+# 		timer.wait_time = duration
+# 		timer.autostart = true
+# 		timer.timeout.connect(result.queue_free)
+# 		result.add_child(timer)
+# 	elif duration == 0.0:
+# 		result.queue_free.call_deferred()
+# 		return null
+
+# 	return result

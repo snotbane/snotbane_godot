@@ -8,17 +8,12 @@ var _points_size : float
 	get: return _points_size
 	set(value):
 		_points_size = value
+		debug_path.points_radius = _points_size
 
-var path_mesh : MeshInstance3D
-var path_material : StandardMaterial3D :
-	get: return debug_draw.get_meta(&"_material")
-
-var target_material : StandardMaterial3D
-
-var points_multimesh : MultiMeshInstance3D
-
-var debug_draw : Node3D
-var origin_label : Label3D
+var debug_path : DebugDraw3D.Path
+var debug_point_origin : DebugDraw3D.Point
+var debug_point_target : DebugDraw3D.Point
+var debug_ray : DebugDraw3D.Ray
 
 func create_new_label(parent: Node) -> Label3D:
 	var result := Label3D.new()
@@ -29,17 +24,28 @@ func create_new_label(parent: Node) -> Label3D:
 	parent.add_child(result)
 	return result
 
+func _init() -> void:
+	if not OS.is_debug_build(): return
+
+	debug_path = DebugDraw3D.Path.new()
+	debug_point_origin = DebugDraw3D.Point.new()
+	debug_point_target = DebugDraw3D.Point.new()
+	debug_ray = DebugDraw3D.Ray.from_global_to_global()
+
 
 func _ready() -> void:
 	if not OS.is_debug_build():
 		queue_free()
 		return
 
+	add_child(debug_path, false, INTERNAL_MODE_BACK)
+	add_child(debug_point_origin, false, INTERNAL_MODE_BACK)
+	add_child(debug_point_target, false, INTERNAL_MODE_BACK)
+	add_child(debug_ray, false, INTERNAL_MODE_BACK)
+
 	_host.visibility_changed.connect(_on_host_visibility_changed)
 	_agent.path_changed.connect(_on_agent_path_changed)
 
-func _exit_tree() -> void:
-	DebugDraw3D.clear(name + &"_path")
 
 func _process(_delta: float) -> void:
 	if not visible: return
@@ -52,23 +58,28 @@ func _process(_delta: float) -> void:
 	else:
 		color = Color.YELLOW
 
-	DebugDraw3D.set_color(name + &"_path", color)
-	DebugDraw3D.set_color(name + &"_origin", color)
-	DebugDraw3D.set_color(name + &"_target", color)
+	debug_path.color = color
 
-	DebugDraw3D.point(name + &"_origin", _host.global_position)
-	DebugDraw3D.point(name + &"_target", _agent.target_position, _agent.target_desired_distance)
+	debug_point_origin.color = color
+	debug_point_origin.position = _host.global_position
+
+	debug_point_target.color = color
+	debug_point_target.position = _agent.target_position
+	debug_point_target.radius = _agent.target_desired_distance
 
 func _on_host_visibility_changed() -> void:
 	visible = _host.visible
 
 func _on_agent_path_changed() -> void:
-	var points := NavigationServer3D.map_get_path(
-			_host.get_world_3d().get_navigation_map(),
-			_host.global_position,
-			_agent.target_position,
-			true,
-			_agent.navigation_layers
+	debug_path.points = NavigationServer3D.map_get_path(
+		_host.get_world_3d().get_navigation_map(),
+		_host.global_position,
+		_agent.target_position,
+		true,
+		_agent.navigation_layers
 	)
 
-	DebugDraw3D.path(name + &"_path", points, points_size)
+	if debug_path.points.size() < 2: return
+
+	debug_ray.origin = debug_path.points[0]
+	debug_ray.target = debug_path.points[-1]
