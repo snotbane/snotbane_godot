@@ -2,7 +2,5 @@
 
 [resource]
 top_radius = 0.0
-bottom_radius = 0.25
-height = 1.0
 radial_segments = 16
 cap_top = false
