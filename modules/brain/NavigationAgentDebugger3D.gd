@@ -10,10 +10,10 @@ var _points_size : float
 		_points_size = value
 		debug_path.points_radius = _points_size
 
-var debug_path : DebugDraw3D.Path
-var debug_point_origin : DebugDraw3D.Point
-var debug_point_target : DebugDraw3D.Point
-var debug_ray : DebugDraw3D.Ray
+var debug_path : DebugDraw3D_MultiPoint
+var debug_point_origin : DebugDraw3D_Point
+var debug_point_target : DebugDraw3D_Point
+var debug_ray : DebugDraw3D_Ray
 
 func create_new_label(parent: Node) -> Label3D:
 	var result := Label3D.new()
@@ -27,10 +27,10 @@ func create_new_label(parent: Node) -> Label3D:
 func _init() -> void:
 	if not OS.is_debug_build(): return
 
-	debug_path = DebugDraw3D.Path.new()
-	debug_point_origin = DebugDraw3D.Point.new()
-	debug_point_target = DebugDraw3D.Point.new()
-	debug_ray = DebugDraw3D.Ray.from_global_to_global()
+	debug_path = DebugDraw3D_MultiPoint.new()
+	debug_point_origin = DebugDraw3D_Point.new()
+	debug_point_target = DebugDraw3D_Point.new()
+	debug_ray = DebugDraw3D_Ray.from_global_to_global()
 
 
 func _ready() -> void:
