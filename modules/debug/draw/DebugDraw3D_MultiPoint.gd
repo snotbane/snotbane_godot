@@ -1,7 +1,9 @@
 
 class_name DebugDraw3D_MultiPoint extends _DebugDraw3D_MultiMesh
-var _points_radius : float
-var points_radius : float :
+
+var _points_radius : float = 0.05
+## The radius size of each point in the array.
+@export_range(0.0, 1.0, 0.01, "or_greater") var points_radius : float = 0.05 :
 	get: return _points_radius
 	set(value):
 		value = maxf(value, 0.0)
@@ -52,4 +54,7 @@ func _init(__top_level__: bool = true, __points__: PackedVector3Array = [], __po
 	line.material_override = material
 	add_child(line)
 
-	points = __points__
+	_points_radius = __points_radius__
+	_points = __points__
+
+	_refresh()
