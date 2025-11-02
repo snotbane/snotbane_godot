@@ -12,7 +12,6 @@ var _host_radius : float = 0.1
 		origin.scale = Vector3.ONE * _host_radius
 
 var origin : MeshInstance3D
-var target : MeshInstance3D
 
 func _init(__top_level__: bool = true, __points__: PackedVector3Array = [], __points_radius__: float = 0.125) -> void:
 	super._init(__top_level__, __points__, __points_radius__)
@@ -22,12 +21,6 @@ func _init(__top_level__: bool = true, __points__: PackedVector3Array = [], __po
 	origin.material_override = material
 	origin.mesh = DebugDraw3D.ARROW_MESH
 	add_child(origin)
-
-	target = MeshInstance3D.new()
-	target.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	target.material_override = material
-	target.mesh = DebugDraw3D.POINT_MESH
-	# add_child(target)
 
 	host_radius = host_radius
 
@@ -39,11 +32,17 @@ func _ready() -> void:
 		_agent.desired_move.connect(_on_brain_desired_move)
 
 
-func _process(delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	origin.position = _host.global_position
-	# target.scale = Vector3.ONE * _agent.target_desired_distance
+
 	if _agent.is_target_reached():
-		color = Color.BLUE
+		if _agent is Brain3D:
+			if _agent._travel_state == Brain3D.STOPPED:
+				color = Color.BLUE
+			else:
+				color = Color.AQUAMARINE
+		else:
+			color = Color.BLUE
 	elif _agent.is_navigation_finished():
 		color = Color.RED
 	else:
@@ -51,8 +50,6 @@ func _process(delta: float) -> void:
 
 	points = _agent.get_current_navigation_path()
 	visible = _host.is_visible_in_tree()
-
-	# target.position = _agent.target_position
 
 
 func _refresh_points() -> void:

@@ -22,10 +22,6 @@ func _init(__top_level__: bool = true, __position__: Vector3 = Vector3.ZERO, __t
 	label.pixel_size = 0.0005
 	label.modulate = color
 	label.position = Vector3.UP * radius * 1.25
-
 	text = __text__
-
-func _ready() -> void:
-	super._ready()
 
 	add_child(label)
