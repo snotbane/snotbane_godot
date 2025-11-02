@@ -54,3 +54,14 @@ func _init(__top_level__: bool) -> void:
 	timer.autostart = false
 	timer.timeout.connect(queue_free)
 	add_child(timer)
+
+func _ready() -> void:
+	if OS.is_debug_build(): return
+
+	var substitute := Node3D.new()
+	substitute.transform = transform
+	for child in get_children():
+		child.reparent(substitute, false)
+
+	add_sibling(substitute)
+	queue_free()
