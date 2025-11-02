@@ -33,10 +33,13 @@ var line : MeshInstance3D
 
 
 func _refresh() -> void:
+	_refresh_points()
+	_refresh_line()
+func _refresh_points() -> void:
 	multimesh_inst.multimesh.instance_count = _points.size() if _points_radius > 0.0 else 0
 	for i in multimesh_inst.multimesh.instance_count:
 		multimesh_inst.multimesh.set_instance_transform(i, Transform3D(Basis.from_scale(Vector3.ONE * points_radius), _points[i]))
-
+func _refresh_line() -> void:
 	line.mesh.clear_surfaces()
 	if  points.size() == 0: return
 	line.mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)

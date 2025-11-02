@@ -53,6 +53,4 @@ func _init(__top_level__: bool) -> void:
 	timer = Timer.new()
 	timer.autostart = false
 	timer.timeout.connect(queue_free)
-
-func _ready() -> void:
 	add_child(timer)

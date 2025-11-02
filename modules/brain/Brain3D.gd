@@ -16,6 +16,9 @@ var _refresh_duration : float = 0.1
 		if target != null:
 			target.refresh_duration = _refresh_duration
 
+## If enabled, we will always attempt to reach the closest point on the navigation map rather than the exact target position, even if that target is unreachable. The closest position will be treated as the actual target position (i.e. reaching it will result in a navigation success). If disabled, the agent will stop moving as it will consider the target to be unreachable.
+@export var use_closest : bool = true
+
 ## If enabled, [member target_position] will be updated once every [member refresh_duration] seconds.
 var continuous_update : bool :
 	get: return refresh_duration > 0.0
@@ -56,13 +59,13 @@ func _physics_process(delta: float) -> void:
 
 
 func refresh_target_position() -> void:
-	target_position = target.target_position
+	target_position = NavigationServer3D.map_get_closest_point(get_navigation_map(), target.target_position) if use_closest else target.target_position
 
-func travel(target: Variant) :
-	if target != null:
+
+func travel(destination: Variant) :
+	if destination != null:
 		var was_travelling := travelling
-		target.target = target
-		refresh_target_position()
+		target.assign(destination)
 		if not was_travelling:
 			await wait(refresh_duration)
 			if not is_target_reached():
@@ -70,7 +73,7 @@ func travel(target: Variant) :
 	stop()
 
 func stop() -> void:
-	target.target = null
+	target.unassign()
 
 func wait(duration_seconds: float) :
 	await get_tree().create_timer(duration_seconds).timeout

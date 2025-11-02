@@ -12,9 +12,4 @@ func _init(__top_level__: bool, __mesh__: Mesh) -> void:
 	multimesh_inst.multimesh.mesh = __mesh__
 	multimesh_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	multimesh_inst.material_override = material
-
-
-func _ready() -> void:
-	super._ready()
-
 	add_child(multimesh_inst)

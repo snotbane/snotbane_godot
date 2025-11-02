@@ -32,7 +32,9 @@ var refresh_duration : float :
 		_wait_time_is_valid = value > 0.0
 		if _wait_time_is_valid:
 			wait_time = value
-			if is_stopped(): start()
+			if is_inside_tree():
+				if is_stopped():	start()
+			else:					autostart = true
 		else:
 			if not is_stopped(): stop()
 
@@ -46,7 +48,7 @@ func try_update() -> void:
 	if not is_assigned: return
 	updated.emit()
 
-func assign(value: Variant, relative_pos: Variant = null) -> void:
+func assign(value: Variant, relative_pos: Variant = null, closest: bool = true) -> void:
 	assert(value == null or value is Node2D or value is Node3D or value is Vector2 or value is Vector3, "Assigned target must be a Node2D or Node3D, or a Vector2 or Vector3.")
 	assert(relative_pos == null or relative_pos is Vector2 or relative_pos is Vector3, "Relative position must be a Vector2 or Vector3.")
 	if _target_node == value and _target_pos == relative_pos: return
@@ -64,7 +66,8 @@ func assign(value: Variant, relative_pos: Variant = null) -> void:
 	if _target_node != null:
 		_target_node.tree_exiting.connect(unassign)
 
-	changed.emit()
+	if is_assigned:
+		changed.emit()
 
 func unassign() -> void:
 	assign(null)
