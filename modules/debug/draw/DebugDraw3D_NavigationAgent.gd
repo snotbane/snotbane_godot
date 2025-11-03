@@ -33,8 +33,11 @@ func _ready() -> void:
 
 	if not OS.is_debug_build(): return
 
-	if not Engine.is_editor_hint() and _agent is Brain3D:
-		_agent.desired_move.connect(_on_brain_desired_move)
+	if not Engine.is_editor_hint():
+		reparent.call_deferred(_host)
+
+		if _agent is Brain3D:
+			_agent.desired_move.connect(_on_brain_desired_move)
 
 
 func _physics_process(delta: float) -> void:
@@ -56,7 +59,6 @@ func _physics_process(delta: float) -> void:
 		color = Color.YELLOW
 
 	points = _agent.get_current_navigation_path()
-	visible = _host.is_visible_in_tree()
 
 
 func _refresh_points() -> void:

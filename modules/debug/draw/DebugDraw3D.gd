@@ -21,15 +21,16 @@ var _debug_visibility : int = 7
 	set(value):
 		if _debug_visibility == value: return
 		_debug_visibility = value
-
-		if Engine.is_editor_hint():
-			visible = _debug_visibility & 1
-		elif OS.has_feature(&"editor_runtime"):
-			visible = _debug_visibility & 2
-		elif OS.has_feature(&"debug"):
-			visible = _debug_visibility & 4
-		else:
-			visible = _debug_visibility & 8
+		_refresh_debug_visibility()
+func _refresh_debug_visibility() -> void:
+	if Engine.is_editor_hint():
+		visible = _debug_visibility & 1
+	elif OS.has_feature(&"editor_runtime"):
+		visible = _debug_visibility & 2
+	elif OS.has_feature(&"debug"):
+		visible = _debug_visibility & 4
+	else:
+		visible = _debug_visibility & 8
 
 
 var timer : Timer
@@ -60,7 +61,7 @@ func _init(__top_level__: bool) -> void:
 	visibility_changed.connect(_on_visibility_changed)
 
 func _ready() -> void:
-	debug_visibility = debug_visibility
+	_refresh_debug_visibility()
 	if not OS.has_feature(&"release") or visible: return
 
 	var substitute := Node3D.new()
