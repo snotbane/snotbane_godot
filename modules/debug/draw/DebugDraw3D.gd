@@ -55,7 +55,7 @@ func _init(__top_level__: bool) -> void:
 	timer = Timer.new()
 	timer.autostart = false
 	timer.timeout.connect(queue_free)
-	add_child(timer)
+	add_child.call_deferred(timer)
 
 	visibility_changed.connect(_on_visibility_changed)
 
