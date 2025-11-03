@@ -1,5 +1,6 @@
 
-class_name DebugDraw3D_ShapeCast extends DebugDraw3D
+@tool class_name DebugDraw3D_ShapeCast extends DebugDraw3D
+
 var cast : ShapeCast3D
 @export_range(0.0, 100.0, 1.0, "or_greater") var point_radius : float = 10.0
 
@@ -19,58 +20,58 @@ func _init(__cast__: ShapeCast3D = null, __point_radius__: float = 10) -> void:
 	points_multimesh.multimesh = MultiMesh.new()
 	points_multimesh.multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	points_multimesh.multimesh.mesh = DebugDraw3D.ARROW_MESH
-	add_child(points_multimesh)
+	add_child.call_deferred(points_multimesh, false, INTERNAL_MODE_BACK)
 
 	clear_line = MeshInstance3D.new()
 	clear_line.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	clear_line.mesh = ImmediateMesh.new()
-	clear_line.material_override = DebugDraw3D.MESH_MATERIAL.duplicate()
-	clear_line.material_override.albedo_color = Color.GREEN
-	add_child(clear_line)
+	clear_line.set_instance_shader_parameter(&"color", Color.GREEN)
+	add_child.call_deferred(clear_line, false, INTERNAL_MODE_BACK)
 
 	block_line = MeshInstance3D.new()
 	block_line.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	block_line.mesh = ImmediateMesh.new()
-	block_line.material_override = DebugDraw3D.MESH_MATERIAL.duplicate()
-	block_line.material_override.albedo_color = Color.RED
-	add_child(block_line)
+	block_line.set_instance_shader_parameter(&"color", Color.RED)
+	add_child.call_deferred(block_line, false, INTERNAL_MODE_BACK)
 
 	shape_mesh = MeshInstance3D.new()
 	shape_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	shape_mesh.material_override = DebugDraw3D.MESH_MATERIAL.duplicate()
-	shape_mesh.material_override.albedo_color = Color(0, 1, 0, 0.05)
-	add_child(shape_mesh)
+	shape_mesh.set_instance_shader_parameter(&"color", Color(0, 1, 0, 0.05))
+	shape_mesh.material_override = MESH_MATERIAL
+	add_child.call_deferred(shape_mesh, false, INTERNAL_MODE_BACK)
 
 	super._init(true)
 
-	points_multimesh.material_override = material
-
 
 func _ready() -> void:
+	super._ready()
+
 	if cast == null:
 		cast = get_parent()
 	shape_mesh.mesh = cast.shape.get_debug_mesh()
 
 func _process(delta: float) -> void:
-	var camera := get_viewport().get_camera_3d()
 	points_multimesh.multimesh.instance_count = cast.get_collision_count()
 	for i in points_multimesh.multimesh.instance_count:
 		var point_position := cast.get_collision_point(i)
 		var point_normal := cast.get_collision_normal(i)
-		var point_scale := DebugDraw3D.get_fixed_scale(camera, point_position, point_radius)
+		var point_scale := point_radius
 		points_multimesh.multimesh.set_instance_transform(i, Transform3D(
-				Basis.looking_at(point_normal)	* Basis(Vector3.RIGHT, deg_to_rad(-90)).scaled(Vector3.ONE * point_scale),
+				Basis.looking_at(point_normal,
+					Vector3.FORWARD if abs(point_normal.y) == 1.0 else Vector3.UP
+				) * Basis(Vector3.RIGHT, deg_to_rad(-90)) \
+				.scaled_local(Vector3.ONE * point_scale),
 				point_position + point_normal * point_scale
 			)
 		)
 
 	var is_colliding := points_multimesh.multimesh.instance_count > 0
-	points_multimesh.material_override.albedo_color = block_line.material_override.albedo_color if is_colliding else clear_line.material_override.albedo_color
+	points_multimesh.set_instance_shader_parameter(&"color", Color.RED if is_colliding else Color.GREEN)
 
 	var midpoint := cast.global_position.lerp(cast.global_position + cast.target_position, cast.get_closest_collision_unsafe_fraction() if is_colliding else 1.0)
 
 	shape_mesh.global_position = midpoint
-	shape_mesh.material_override.albedo_color = Color(1, 0, 0, 0.25) if is_colliding else Color(0, 1, 0, 0.05)
+	shape_mesh.set_instance_shader_parameter(&"color", Color(1, 0, 0, 0.25) if is_colliding else Color(0, 1, 0, 0.05))
 
 	_refresh(is_colliding, midpoint, cast.global_position, cast.target_position)
 
@@ -81,14 +82,14 @@ func _refresh(is_colliding: bool, collision_point: Vector3, global_origin: Vecto
 
 	clear_line.mesh.clear_surfaces()
 	if clear_distance > 0.0:
-		clear_line.mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
+		clear_line.mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, DebugDraw3D.MESH_MATERIAL)
 		clear_line.mesh.surface_add_vertex(global_origin + Vector3.ZERO)
 		clear_line.mesh.surface_add_vertex(global_origin + normal * clear_distance)
 		clear_line.mesh.surface_end()
 
 	block_line.mesh.clear_surfaces()
 	if clear_distance < length:
-		block_line.mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
+		block_line.mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, DebugDraw3D.MESH_MATERIAL)
 		block_line.mesh.surface_add_vertex(global_origin + normal * clear_distance)
 		block_line.mesh.surface_add_vertex(global_origin + target_position)
 		block_line.mesh.surface_end()

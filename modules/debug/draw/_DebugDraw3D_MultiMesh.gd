@@ -1,5 +1,5 @@
 
-class_name _DebugDraw3D_MultiMesh extends DebugDraw3D
+@tool class_name _DebugDraw3D_MultiMesh extends DebugDraw3D
 
 var multimesh_inst : MultiMeshInstance3D
 
@@ -11,5 +11,4 @@ func _init(__top_level__: bool, __mesh__: Mesh) -> void:
 	multimesh_inst.multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh_inst.multimesh.mesh = __mesh__
 	multimesh_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	multimesh_inst.material_override = material
-	add_child(multimesh_inst)
+	add_child.call_deferred(multimesh_inst, false, INTERNAL_MODE_BACK)

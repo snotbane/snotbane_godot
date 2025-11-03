@@ -1,11 +1,12 @@
 shader_type spatial;
+render_mode depth_test_disabled, depth_draw_always;
 
 const float MARCH_THRESHOLD = 0.001;
 
 uniform vec3 base_color : source_color = vec3(0.333);
-uniform float dot_radius = 0.01;
-uniform float dot_spacing = 1.0;
-uniform float max_render_distance = 10.0;
+instance uniform float dot_radius = 0.01;
+instance uniform float dot_spacing = 1.0;
+instance uniform float max_render_distance = 10.0;
 uniform int march_precision = 16;
 uniform float orientation_hinting_strength = 0.1;
 

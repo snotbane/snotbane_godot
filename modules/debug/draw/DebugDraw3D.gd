@@ -1,8 +1,9 @@
-class_name DebugDraw3D extends Node3D
+
+@tool class_name DebugDraw3D extends Node3D
 
 const POINT_MESH : Mesh = preload("uid://cnkvd3t13kcod")
 const ARROW_MESH : Mesh = preload("uid://bak40cp1rwhko")
-const MESH_MATERIAL : StandardMaterial3D = preload("uid://bdosbg5iohx24")
+const MESH_MATERIAL : ShaderMaterial = preload("uid://bdosbg5iohx24")
 
 static func get_fixed_scale(camera: Camera3D, global_origin: Vector3, pixel_size: float) -> float:
 	var fov_rad = deg_to_rad(camera.fov)
@@ -14,18 +15,22 @@ static func get_fixed_scale(camera: Camera3D, global_origin: Vector3, pixel_size
 	return pixel_size * world_per_pixel
 
 
-var _color : Color
-var color : Color :
-	get: return _color
+var _debug_visibility : int = 7
+@export_flags("Editor", "Player", "Debug", "Release") var debug_visibility : int = 7 :
+	get: return _debug_visibility
 	set(value):
-		if _color == value: return
-		_color = value
-		material.albedo_color = _color
-		_on_color_set()
-func _on_color_set() -> void: pass
-var opacity : float :
-	get: return color.a
-	set(value): color = Color(color.r, color.g, color.b, value)
+		if _debug_visibility == value: return
+		_debug_visibility = value
+
+		if Engine.is_editor_hint():
+			visible = _debug_visibility & 1
+		elif OS.has_feature(&"editor_runtime"):
+			visible = _debug_visibility & 2
+		elif OS.has_feature(&"debug"):
+			visible = _debug_visibility & 4
+		else:
+			visible = _debug_visibility & 8
+
 
 var timer : Timer
 var _duration : float
@@ -44,19 +49,19 @@ var duration : float :
 			if timer.is_inside_tree(): timer.stop()
 			else: timer.autostart = false
 
-var material : StandardMaterial3D
-
 func _init(__top_level__: bool) -> void:
 	top_level = __top_level__
-	material = DebugDraw3D.MESH_MATERIAL.duplicate()
 
 	timer = Timer.new()
 	timer.autostart = false
 	timer.timeout.connect(queue_free)
 	add_child(timer)
 
+	visibility_changed.connect(_on_visibility_changed)
+
 func _ready() -> void:
-	if OS.is_debug_build(): return
+	debug_visibility = debug_visibility
+	if not OS.has_feature(&"release") or visible: return
 
 	var substitute := Node3D.new()
 	substitute.transform = transform
@@ -65,3 +70,7 @@ func _ready() -> void:
 
 	add_sibling(substitute)
 	queue_free()
+
+func _on_visibility_changed() -> void:
+	if Engine.is_editor_hint():
+		debug_visibility = (debug_visibility | (1 << 0)) if visible else (debug_visibility & ~(1 << 0))

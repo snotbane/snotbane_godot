@@ -1,17 +1,40 @@
 
-class_name DebugDraw3D_Point extends _DebugDraw3D_Mesh
+@tool class_name DebugDraw3D_Point extends _DebugDraw3D_Mesh
+
+var _visual_shape : int = 0
+@export_enum("Sphere", "Arrow") var visual_shape : int = 0 :
+	get: return _visual_shape
+	set(value):
+		_visual_shape = value
+		mesh_inst.rotation = Vector3.ZERO
+		match _visual_shape:
+			0:
+				mesh_inst.mesh = POINT_MESH
+			1:
+				mesh_inst.mesh = ARROW_MESH
+				mesh_inst.rotation_degrees.x = -90
+
+var _color := Color.WHITE_SMOKE
+@export var color := Color.WHITE_SMOKE :
+	get: return _color
+	set(value):
+		_color = value
+		mesh_inst.set_instance_shader_parameter(&"color", value)
+		_on_color_set()
+func _on_color_set() -> void: pass
 
 var _radius : float
-var radius : float :
+@export var radius : float = 0.25 :
 	get: return _radius
 	set(value):
 		value = maxf(value, 0.0)
 		if _radius == value: return
 		_radius = value
 		mesh_inst.scale = Vector3.ONE * value
+		_on_radius_set()
+func _on_radius_set() -> void: pass
 
-func _init(__top_level__: bool = true, __position__: Vector3 = Vector3.ZERO, __radius__: float = 0.25) -> void:
+func _init(__top_level__: bool = false, __radius__: float = 0.25) -> void:
 	super._init(__top_level__, DebugDraw3D.POINT_MESH)
 
-	position = __position__
 	radius = __radius__

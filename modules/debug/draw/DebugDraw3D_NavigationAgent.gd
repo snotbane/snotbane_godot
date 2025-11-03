@@ -1,4 +1,5 @@
-class_name DebugDraw3D_NavigationAgent extends DebugDraw3D_MultiPoint
+
+@tool class_name DebugDraw3D_NavigationAgent extends DebugDraw3D_MultiPoint
 
 @onready var _agent : NavigationAgent3D = get_parent()
 @onready var _host : Node3D = _agent.get_parent()
@@ -11,6 +12,9 @@ var _host_radius : float = 0.1
 		_host_radius = value
 		origin.scale = Vector3.ONE * _host_radius
 
+func _on_color_set() -> void:
+	origin.set_instance_shader_parameter(&"color", color)
+
 var origin : MeshInstance3D
 
 func _init(__top_level__: bool = true, __points__: PackedVector3Array = [], __points_radius__: float = 0.125) -> void:
@@ -18,22 +22,25 @@ func _init(__top_level__: bool = true, __points__: PackedVector3Array = [], __po
 
 	origin = MeshInstance3D.new()
 	origin.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	origin.material_override = material
 	origin.mesh = DebugDraw3D.ARROW_MESH
-	add_child(origin)
+	add_child(origin, false, INTERNAL_MODE_BACK)
 
 	host_radius = host_radius
 
 
 func _ready() -> void:
+	super._ready()
+
 	if not OS.is_debug_build(): return
 
-	if _agent is Brain3D:
+	if not Engine.is_editor_hint() and _agent is Brain3D:
 		_agent.desired_move.connect(_on_brain_desired_move)
 
 
 func _physics_process(delta: float) -> void:
 	origin.position = _host.global_position
+
+	if Engine.is_editor_hint(): return
 
 	if _agent.is_target_reached():
 		if _agent is Brain3D:
@@ -58,7 +65,8 @@ func _refresh_points() -> void:
 		return
 
 	var extra_points : int = 1
-	if _agent is Brain3D and _agent.target.is_assigned: extra_points += 1
+	if not Engine.is_editor_hint():
+		if _agent is Brain3D and _agent.target.is_assigned: extra_points += 1
 
 	var idx := _agent.get_current_navigation_path_index()
 	multimesh_inst.multimesh.instance_count = (_points.size() if _points_radius > 0.0 else 0) + extra_points
@@ -75,12 +83,13 @@ func _refresh_points() -> void:
 	)
 	extra_points -= 1
 
-	if _agent is Brain3D and _agent.target.is_assigned:
-		multimesh_inst.multimesh.set_instance_transform(
-			multimesh_inst.multimesh.instance_count - extra_points,
-			Transform3D(Basis.from_scale(Vector3.ONE * _agent.target_desired_distance), _agent.target.target_position)
-		)
-		extra_points -= 1
+	if not Engine.is_editor_hint():
+		if _agent is Brain3D and _agent.target.is_assigned:
+			multimesh_inst.multimesh.set_instance_transform(
+				multimesh_inst.multimesh.instance_count - extra_points,
+				Transform3D(Basis.from_scale(Vector3.ONE * _agent.target_desired_distance), _agent.target.target_position)
+			)
+			extra_points -= 1
 
 
 func _on_brain_desired_move(direction: Vector3) -> void:

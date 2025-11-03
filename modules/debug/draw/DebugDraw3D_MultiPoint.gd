@@ -1,5 +1,5 @@
 
-class_name DebugDraw3D_MultiPoint extends _DebugDraw3D_MultiMesh
+@tool class_name DebugDraw3D_MultiPoint extends _DebugDraw3D_MultiMesh
 
 var _points_radius : float = 0.05
 ## The radius size of each point in the array.
@@ -11,6 +11,16 @@ var _points_radius : float = 0.05
 		_points_radius = value
 
 		_refresh()
+
+var _color := Color.WHITE_SMOKE
+@export var color := Color.WHITE_SMOKE :
+	get: return _color
+	set(value):
+		_color = value
+		multimesh_inst.set_instance_shader_parameter(&"color", _color)
+		line.set_instance_shader_parameter(&"color", _color)
+		_on_color_set()
+func _on_color_set() -> void: pass
 
 var _points : PackedVector3Array
 var points : PackedVector3Array :
@@ -32,6 +42,20 @@ var visible_line : bool :
 var line : MeshInstance3D
 
 
+func _init(__top_level__: bool = true, __points__: PackedVector3Array = [], __points_radius__: float = 0.125) -> void:
+	super._init(__top_level__, POINT_MESH)
+
+	line = MeshInstance3D.new()
+	line.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	line.mesh = ImmediateMesh.new()
+	add_child.call_deferred(line, false, INTERNAL_MODE_BACK)
+
+	_points_radius = __points_radius__
+	_points = __points__
+
+	_refresh()
+
+
 func _refresh() -> void:
 	_refresh_points()
 	_refresh_line()
@@ -42,22 +66,7 @@ func _refresh_points() -> void:
 func _refresh_line() -> void:
 	line.mesh.clear_surfaces()
 	if  points.size() == 0: return
-	line.mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
+	line.mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, DebugDraw3D.MESH_MATERIAL)
 	for i in points.size():
 		line.mesh.surface_add_vertex(points[i])
 	line.mesh.surface_end()
-
-
-func _init(__top_level__: bool = true, __points__: PackedVector3Array = [], __points_radius__: float = 0.125) -> void:
-	super._init(__top_level__, POINT_MESH)
-
-	line = MeshInstance3D.new()
-	line.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	line.mesh = ImmediateMesh.new()
-	line.material_override = material
-	add_child(line)
-
-	_points_radius = __points_radius__
-	_points = __points__
-
-	_refresh()

@@ -1,5 +1,5 @@
 
-class_name DebugDraw3D_Ray extends DebugDraw3D
+@tool class_name DebugDraw3D_Ray extends DebugDraw3D
 
 static func from_global_to_global(__origin__:= Vector3.ZERO, __target__:= Vector3.ZERO, __max_head_size__: float = 0.25) -> DebugDraw3D_Ray:
 	return DebugDraw3D_Ray.new(true, __origin__, __target__, __max_head_size__)
@@ -48,7 +48,7 @@ func _refresh() -> void:
 
 	body_mesh_inst.mesh.clear_surfaces()
 	if body_length > 0.0:
-		body_mesh_inst.mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
+		body_mesh_inst.mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP, DebugDraw3D.MESH_MATERIAL)
 		body_mesh_inst.mesh.surface_add_vertex(origin)
 		body_mesh_inst.mesh.surface_add_vertex(origin + normal * body_length)
 		body_mesh_inst.mesh.surface_end()
@@ -72,19 +72,17 @@ func _init(__top_level__: bool, __origin__: Vector3, __target__: Vector3, __max_
 	target = __target__
 
 	head_offset = Node3D.new()
-	add_child(head_offset)
+	add_child.call_deferred(head_offset, false, INTERNAL_MODE_BACK)
 
 	head_mesh_inst = MeshInstance3D.new()
 	head_mesh_inst.rotation_degrees.x = -90.0
 	head_mesh_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	head_mesh_inst.material_override = material
 	head_mesh_inst.mesh = DebugDraw3D.ARROW_MESH
 	head_offset.add_child(head_mesh_inst)
 
 	body_mesh_inst = MeshInstance3D.new()
 	body_mesh_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	body_mesh_inst.material_override = material
 	body_mesh_inst.mesh = ImmediateMesh.new()
-	add_child(body_mesh_inst)
+	add_child.call_deferred(body_mesh_inst, false, INTERNAL_MODE_BACK)
 
 	_refresh()
