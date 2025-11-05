@@ -62,7 +62,7 @@ func _ready() -> void:
 
 func sequence() -> void:
 	if not has_method(&"_sequence"): return
-	await get_tree().physics_frame
+	await get_tree().process_frame
 	while is_instance_valid(self): await call(&"_sequence")
 
 func _physics_process(delta: float) -> void:
