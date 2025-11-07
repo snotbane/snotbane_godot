@@ -1,5 +1,5 @@
-@tool
-extends EditorPlugin
+
+@tool extends EditorPlugin
 
 const DEBUG_GHOST_AUTOLOAD_NAME := "snotbane_debug_ghost"
 const DEBUG_GHOST_AUTOLOAD_PATH := "modules/debug/ghost/DebugGhostAutoload.gd"
@@ -29,20 +29,6 @@ func configure_input() -> void:
 	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_FULLSCREEN, [
 		fullscreen_0,
 		fullscreen_1,
-	])
-
-
-	var fullscreen_exclusive_0 := InputEventKey.new()
-	fullscreen_exclusive_0.physical_keycode = KEY_F11
-	fullscreen_exclusive_0.shift_pressed = true
-	var fullscreen_exclusive_1 := InputEventKey.new()
-	fullscreen_exclusive_1.physical_keycode = KEY_F
-	fullscreen_exclusive_1.shift_pressed = true
-	fullscreen_exclusive_1.ctrl_pressed = true
-	fullscreen_exclusive_1.command_or_control_autoremap = true
-	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_FULLSCREEN_EXCLUSIVE, [
-		fullscreen_exclusive_0,
-		fullscreen_exclusive_1,
 	])
 
 
