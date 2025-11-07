@@ -7,8 +7,19 @@ static func from_global_to_global(__origin__:= Vector3.ZERO, __target__:= Vector
 static func to_direction(__normal__: Vector3, __length__: float = 1.0, __max_head_size__: float = 0.25) -> DebugDraw3D_Ray:
 	return DebugDraw3D_Ray.new(false, Vector3.ZERO, __normal__ * __length__, __max_head_size__)
 
-var _max_head_size : float
-var max_head_size : float :
+var _color := Color.WHITE_SMOKE
+@export var color := Color.WHITE_SMOKE :
+	get: return _color
+	set(value):
+		_color = value
+
+		if body_mesh_inst == null: return
+
+		body_mesh_inst.set_instance_shader_parameter(&"color", _color)
+		head_mesh_inst.set_instance_shader_parameter(&"color", _color)
+
+var _max_head_size : float = 0.1
+@export var max_head_size : float = 0.1 :
 	get: return _max_head_size
 	set(value):
 		value = maxf(value, 0.0)
@@ -34,7 +45,7 @@ var target : Vector3 :
 var normal : Vector3 :
 	get: return (target - origin).normalized()
 	set(value): target = origin + value * length
-var length : float :
+@export_range(0.01, 1.0, 0.01, "or_greater") var length : float = 1.0 :
 	get: return origin.distance_to(target)
 	set(value): target = origin + normal * value
 func _refresh() -> void:
@@ -54,7 +65,7 @@ func _refresh() -> void:
 		body_mesh_inst.mesh.surface_end()
 
 	head_offset.scale = Vector3.ONE * head_length
-	head_offset.global_position = origin + normal * (body_length + (head_length * 0.5))
+	head_offset.global_position = global_position + origin + normal * (body_length + (head_length * 0.5))
 	head_offset.look_at(
 		head_offset.global_position + normal,
 		Vector3.FORWARD if abs(normal.y) == 1.0 else Vector3.UP
@@ -64,7 +75,7 @@ var head_offset : Node3D
 var head_mesh_inst : MeshInstance3D
 var body_mesh_inst : MeshInstance3D
 
-func _init(__top_level__: bool, __origin__: Vector3, __target__: Vector3, __max_head_size__: float = 0.25) -> void:
+func _init(__top_level__: bool = false, __origin__ := Vector3.ZERO, __target__:= Vector3.FORWARD, __max_head_size__: float = 0.1) -> void:
 	super._init(__top_level__)
 
 	max_head_size = __max_head_size__
@@ -85,4 +96,6 @@ func _init(__top_level__: bool, __origin__: Vector3, __target__: Vector3, __max_
 	body_mesh_inst.mesh = ImmediateMesh.new()
 	add_child.call_deferred(body_mesh_inst, false, INTERNAL_MODE_BACK)
 
-	_refresh()
+	color = color
+
+	_refresh.call_deferred()
