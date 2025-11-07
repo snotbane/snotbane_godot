@@ -161,7 +161,7 @@ static func random_vector3(__range__: Vector2, random: RandomNumberGenerator = n
 
 
 static func flatten(vector: Vector3, up := Vector3.UP) -> Vector3:
-	return (vector * (Vector3.ONE - Vector3.UP)).normalized()
+	return (vector * (Vector3.ONE - up)).normalized()
 
 static func expanded(vector: Vector2) -> Vector3:
 	return Vector3(vector.x, vector.y, vector.x)
