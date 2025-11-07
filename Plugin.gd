@@ -1,8 +1,8 @@
 @tool
 extends EditorPlugin
 
-const DEBUG_GHOST_AUTOLOAD_NAME := "mincuz_debug_ghost"
-const DEBUG_GHOST_AUTOLOAD_PATH := "scripts/DebugGhostAutoload.gd"
+const DEBUG_GHOST_AUTOLOAD_NAME := "snotbane_debug_ghost"
+const DEBUG_GHOST_AUTOLOAD_PATH := "modules/debug/ghost/DebugGhostAutoload.gd"
 
 func _enable_plugin() -> void:
 	self.add_autoload_singleton(DEBUG_GHOST_AUTOLOAD_NAME, DEBUG_GHOST_AUTOLOAD_PATH)
