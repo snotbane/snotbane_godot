@@ -163,6 +163,12 @@ static func random_vector3(__range__: Vector2, random: RandomNumberGenerator = n
 static func flatten(vector: Vector3, up := Vector3.UP) -> Vector3:
 	return (vector * (Vector3.ONE - Vector3.UP)).normalized()
 
+static func expanded(vector: Vector2) -> Vector3:
+	return Vector3(vector.x, vector.y, vector.x)
+
+static func condensed(vector: Vector3) -> Vector2:
+	return Vector2(xz(vector).length(), vector.y)
+
 
 static func is_in_range(x: float, __range__: Vector2) -> bool:
 	return x >= __range__.x and x <= __range__.y
