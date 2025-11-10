@@ -3,6 +3,8 @@ class_name RescueAttachment extends Node
 
 signal rescued
 
+@export var rescue_to_root : bool = false
+
 var node : Node :
 	get: return self
 
@@ -20,9 +22,9 @@ func rescue() -> void:
 	var gt
 	var apply_global := node is Node2D or node is Node3D
 	if apply_global:
-		gt = node.transform
+		gt = node.global_transform
 
-	var ancestor : Node = parent
+	var ancestor : Node = Music.inst.get_tree().root if rescue_to_root else parent
 	while ancestor.is_queued_for_deletion():
 		if apply_global:
 			gt = ancestor.transform * gt
@@ -31,8 +33,8 @@ func rescue() -> void:
 	parent.remove_child(node)
 	ancestor.add_child.call_deferred(node)
 
-	if apply_global:
-		node.transform = gt
+	if ancestor is Node3D and apply_global:
+		node.global_transform = gt
 
 	times_rescued += 1
 	rescued.emit()
