@@ -103,6 +103,26 @@ static func add_default_input_binding(binding_name: String, events: Array = [], 
 		"events": events,
 	})
 
+static func get_position_on_plane_from_camera(camera: Camera3D, plane: Plane) -> Vector3:
+	var mouse_pos := camera.get_viewport().get_mouse_position()
+
+	var ray_origin := camera.project_ray_origin(mouse_pos)
+	var ray_normal := camera.project_ray_normal(mouse_pos)
+
+	var distance := plane.intersects_ray(ray_origin, ray_normal)
+	if distance == null: return camera.global_position
+
+	return ray_origin + ray_normal * distance
+
+static func cast_mouse(camera: Camera3D, collision_mask: int, max_distance: float = 1000.0) -> Dictionary:
+	var mouse_position := camera.get_viewport().get_mouse_position()
+	var ray_origin := camera.project_ray_origin(mouse_position)
+	var ray_normal := camera.project_ray_normal(mouse_position)
+
+	var query = PhysicsRayQueryParameters3D.create(ray_origin, ray_origin + ray_normal * max_distance, collision_mask)
+
+	return camera.get_world_3d().direct_space_state.intersect_ray(query)
+
 #endregion
 #region Time
 
