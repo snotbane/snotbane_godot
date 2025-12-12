@@ -23,5 +23,9 @@ func _ready() -> void:
 	if shape == null:
 		shape = get_parent().shape
 		global_transform = get_parent().global_transform
-	mesh_inst.mesh = shape.get_debug_mesh()
+	shape.changed.connect(refresh_mesh)
+	refresh_mesh()
 	color = color
+
+func refresh_mesh() -> void:
+	mesh_inst.mesh = shape.get_debug_mesh()
