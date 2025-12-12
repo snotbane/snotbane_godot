@@ -179,9 +179,10 @@ static func random_vector2(__range__: Vector2, random: RandomNumberGenerator = n
 static func random_vector3(__range__: Vector2, random: RandomNumberGenerator = null) -> Vector3:
 	return random_unit_vector3(random) * random_float(__range__, random)
 
-
-static func flatten(vector: Vector3, up := Vector3.UP) -> Vector3:
-	return (vector * (Vector3.ONE - up)).normalized()
+## Returns the given [vector] flattened and normalized along plane [up].
+static func flatten(vector: Vector3, up := Vector3.UP, normalize := true) -> Vector3:
+	var result := vector * (Vector3.ONE - up)
+	return result.normalized() if normalize else result
 
 static func expanded(vector: Vector2) -> Vector3:
 	return Vector3(vector.x, vector.y, vector.x)
