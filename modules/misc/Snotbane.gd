@@ -180,7 +180,7 @@ static func random_vector3(__range__: Vector2, random: RandomNumberGenerator = n
 	return random_unit_vector3(random) * random_float(__range__, random)
 
 ## Returns the given [vector] flattened and normalized along plane [up].
-static func flatten(vector: Vector3, up := Vector3.UP, normalize := true) -> Vector3:
+static func flatten(vector: Vector3, normalize := false, up := Vector3.UP) -> Vector3:
 	var result := vector * (Vector3.ONE - up)
 	return result.normalized() if normalize else result
 

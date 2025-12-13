@@ -98,5 +98,10 @@ func _process(delta: float) -> void:
 	#endregion
 
 func _input(event: InputEvent) -> void:
+	if event.is_action_pressed(&"ui_cancel"):
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else Input.MOUSE_MODE_CAPTURED
+	# if event is InputEventMouseButton:
+	# 	if event.button_index == MOUSE_BUTTON_LEFT:
+	# 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	if event is InputEventMouseMotion:
 		turn_input_vector_mouse += event.relative
