@@ -51,8 +51,9 @@ var normal : Vector3 :
 func _refresh() -> void:
 	if not is_inside_tree(): return
 
-	visible = not origin.is_equal_approx(target)
-	if not visible: return
+	head_mesh_inst.visible = not origin.is_equal_approx(target)
+	body_mesh_inst.visible = head_mesh_inst.visible
+	if not head_mesh_inst.visible: return
 
 	var head_length := clampf(max_head_size, 0.0, length)
 	var body_length := length - head_length
