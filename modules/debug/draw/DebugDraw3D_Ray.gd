@@ -45,6 +45,9 @@ var target : Vector3 :
 var normal : Vector3 :
 	get: return (target - origin).normalized()
 	set(value): target = origin + value * length
+var normal_global : Vector3 :
+	get: return (to_global(target) - to_global(origin)).normalized()
+
 @export_range(0.01, 1.0, 0.01, "or_greater") var length : float = 1.0 :
 	get: return origin.distance_to(target)
 	set(value): target = origin + normal * value
@@ -66,10 +69,10 @@ func _refresh() -> void:
 		body_mesh_inst.mesh.surface_end()
 
 	head_offset.scale = Vector3.ONE * head_length
-	head_offset.global_position = global_position + origin + normal * (body_length + (head_length * 0.5))
+	head_offset.global_position = global_position + origin + normal_global * (body_length + (head_length * 0.5))
 	head_offset.look_at(
-		head_offset.global_position + normal,
-		Vector3.FORWARD if abs(normal.y) == 1.0 else Vector3.UP
+		head_offset.global_position + normal_global,
+		Vector3.FORWARD if abs(normal_global.y) == 1.0 else Vector3.UP
 	)
 
 var head_offset : Node3D
