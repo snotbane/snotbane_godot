@@ -93,6 +93,22 @@ static func find_child_of_type(node: Node, type: String, recursive: bool = false
 	return null
 
 #endregion
+#region Physics
+
+## Teleports a [PhysicsBody3D] to the specified [transform]. Only intended to be used in special situations; do NOT use every frame.
+static func teleport_transform_3d(body: PhysicsBody3D, transform: Transform3D) -> void:
+	PhysicsServer3D.body_set_state(body.get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM, transform)
+
+## Teleports a [PhysicsBody3D] to the specified [position]. Only intended to be used in special situations; do NOT use every frame.
+static func teleport_position_3d(body: PhysicsBody3D, position: Vector3) -> void:
+	PhysicsServer3D.body_set_state(body.get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM, Transform3D(body.global_basis, position))
+
+## Teleports a [PhysicsBody3D] to the specified [rotation]. Only intended to be used in special situations; do NOT use every frame.
+static func teleport_rotation_3d(body: PhysicsBody3D, rotation: Vector3) -> void:
+	PhysicsServer3D.body_set_state(body.get_rid(), PhysicsServer3D.BODY_STATE_TRANSFORM, Transform3D(Basis.from_euler(rotation), body.global_position))
+
+
+#endregion
 #region Input
 
 static func add_default_input_binding(binding_name: String, events: Array = [], deadzone := 0.2) -> void:
