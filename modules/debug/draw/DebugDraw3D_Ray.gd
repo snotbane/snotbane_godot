@@ -70,9 +70,13 @@ func _refresh() -> void:
 
 	head_offset.scale = Vector3.ONE * head_length
 	head_offset.global_position = global_position + origin + normal_global * (body_length + (head_length * 0.5))
+
+	# var up := Vector3.FORWARD if abs(normal_global.y) == 1.0 else Vector3.UP
+	if normal_global.is_zero_approx(): return
+
 	head_offset.look_at(
 		head_offset.global_position + normal_global,
-		Vector3.FORWARD if abs(normal_global.y) == 1.0 else Vector3.UP
+		Vector3.FORWARD if is_equal_approx(absf(normal_global.y), 1.0) else Vector3.UP
 	)
 
 var head_offset : Node3D

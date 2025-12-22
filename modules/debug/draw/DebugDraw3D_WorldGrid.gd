@@ -31,7 +31,7 @@ var _max_render_distance : float
 		mesh_inst.set_instance_shader_parameter(&"max_render_distance", _max_render_distance)
 
 func _init() -> void:
-	super._init(true, WORLD_MESH)
+	super._init(top_level, WORLD_MESH)
 
 	mesh_inst.material_override = null
 
