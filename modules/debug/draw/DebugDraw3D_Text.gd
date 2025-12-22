@@ -5,7 +5,8 @@ func _on_color_set() -> void:
 	label.modulate = color
 
 func _on_radius_set() -> void:
-	label.position = Vector3.UP * radius * 1.25
+	# label.position = Vector3.UP * radius * 1.25 # Crashes game.
+	pass
 
 @export var text : String :
 	get: return label.text
