@@ -92,6 +92,14 @@ static func find_child_of_type(node: Node, type: String, recursive: bool = false
 		return grandchild
 	return null
 
+## Searches among this node's siblings until it finds a [Node] whose class or script matches the specified [type]. This will never return itself unless [allow_self] is true.
+static func find_sibling_of_type(node: Node, type: String, allow_self: bool = false) -> Node:
+	for child in node.get_parent().get_children():
+		if child == node and not allow_self: continue
+		if child.get_class() == type or (child.get_script() and child.get_script().get_global_name() == type):
+			return child
+	return null
+
 #endregion
 #region Physics
 
