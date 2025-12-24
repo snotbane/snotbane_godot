@@ -70,23 +70,33 @@ static func create_one_shot_audio(parent: Node, stream: AudioStream, from_positi
 
 	return result
 
+
+static func is_node_of_type(node: Node, type: String) -> bool:
+	if node.get_class() == type: return true
+
+	var script : Script = node.get_script()
+	while script != null:
+		if script.get_global_name() == type: return true
+		script = script.get_base_script()
+
+	return false
+
+
 ## Searches up the parental hierarchy until it finds a [Node] whose class or script matches the specified [type].
 static func find_parent_of_type(node: Node, type: String) -> Node:
 	node = node.get_parent()
-	while node:
-		if node.get_class() == type or (node.get_script() and node.get_script().get_global_name() == type):
-			return node
+	while node != null:
+		if is_node_of_type(node, type): return node
 		node = node.get_parent()
 	return null
 
 ## Searches down the child hierarchy until it finds a [Node] whose class or script matches the specified [type].
 static func find_child_of_type(node: Node, type: String, recursive: bool = false) -> Node:
 	for child in node.get_children():
-		if child.get_class() == type or (child.get_script() and child.get_script().get_global_name() == type):
-			return child
+		if is_node_of_type(child, type): return child
 		if not recursive: continue
 
-		var grandchild := find_child_of_type(child, type, recursive)
+		var grandchild := find_child_of_type(child, type, true)
 		if grandchild == null: continue
 
 		return grandchild
@@ -96,7 +106,7 @@ static func find_child_of_type(node: Node, type: String, recursive: bool = false
 static func find_sibling_of_type(node: Node, type: String, allow_self: bool = false) -> Node:
 	for child in node.get_parent().get_children():
 		if child == node and not allow_self: continue
-		if child.get_class() == type or (child.get_script() and child.get_script().get_global_name() == type):
+		if is_node_of_type(child, type):
 			return child
 	return null
 
