@@ -5,8 +5,7 @@ func _on_color_set() -> void:
 	label.modulate = color
 
 func _on_radius_set() -> void:
-	# label.position = Vector3.UP * radius * 1.25 # Crashes game.
-	pass
+	label.position = Vector3.UP * radius * 1.25
 
 @export var text : String :
 	get: return label.text
@@ -19,16 +18,17 @@ func _on_radius_set() -> void:
 
 var label : Label3D
 
-func _init(__top_level__: bool = false, __text__: String = "", __radius__: float = 0.125) -> void:
-	super._init(__top_level__, __radius__)
-
+func _init(__text__: String = "", __radius__: float = 0.125) -> void:
 	label = Label3D.new()
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	label.double_sided = false
 	label.fixed_size = true
 	label.pixel_size = 0.001
 	label.modulate = color
-	label.position = Vector3.UP * radius * 1.25
 	text = __text__
+
+	super._init(__radius__)
+
+	# label.position = Vector3.UP * radius * 1.25
 
 	add_child.call_deferred(label, false, INTERNAL_MODE_BACK)

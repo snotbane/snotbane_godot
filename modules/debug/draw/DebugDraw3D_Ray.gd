@@ -1,12 +1,6 @@
 
 @tool class_name DebugDraw3D_Ray extends DebugDraw3D
 
-static func from_global_to_global(__origin__:= Vector3.ZERO, __target__:= Vector3.ZERO, __max_head_size__: float = 0.25) -> DebugDraw3D_Ray:
-	return DebugDraw3D_Ray.new(true, __origin__, __target__, __max_head_size__)
-
-static func to_direction(__normal__: Vector3, __length__: float = 1.0, __max_head_size__: float = 0.25) -> DebugDraw3D_Ray:
-	return DebugDraw3D_Ray.new(false, Vector3.ZERO, __normal__ * __length__, __max_head_size__)
-
 var _color := Color.WHITE_SMOKE
 @export var color := Color.WHITE_SMOKE :
 	get: return _color
@@ -18,8 +12,8 @@ var _color := Color.WHITE_SMOKE
 		body_mesh_inst.set_instance_shader_parameter(&"color", _color)
 		head_mesh_inst.set_instance_shader_parameter(&"color", _color)
 
-var _max_head_size : float = 0.1
-@export var max_head_size : float = 0.1 :
+var _max_head_size : float = 0.25
+@export var max_head_size : float = 0.125 :
 	get: return _max_head_size
 	set(value):
 		value = maxf(value, 0.0)
@@ -42,15 +36,15 @@ var target : Vector3 :
 		if _target == value: return
 		_target = value
 		_refresh()
-var normal : Vector3 :
+@export var normal : Vector3 = Vector3.FORWARD :
 	get: return (target - origin).normalized()
-	set(value): target = origin + value * length
+	set(value): target = origin + value.normalized() * length
 var normal_global : Vector3 :
 	get: return (to_global(target) - to_global(origin)).normalized()
 
 @export_range(0.01, 1.0, 0.01, "or_greater") var length : float = 1.0 :
 	get: return origin.distance_to(target)
-	set(value): target = origin + normal * value
+	set(value): target = origin + normal.normalized() * value
 func _refresh() -> void:
 	if not is_inside_tree(): return
 
@@ -83,8 +77,8 @@ var head_offset : Node3D
 var head_mesh_inst : MeshInstance3D
 var body_mesh_inst : MeshInstance3D
 
-func _init(__top_level__: bool = false, __origin__ := Vector3.ZERO, __target__:= Vector3.FORWARD, __max_head_size__: float = 0.1) -> void:
-	super._init(__top_level__)
+func _init(__origin__ := Vector3.ZERO, __target__:= Vector3.FORWARD, __max_head_size__: float = 0.1) -> void:
+	super._init()
 
 	max_head_size = __max_head_size__
 	origin = __origin__
@@ -103,7 +97,5 @@ func _init(__top_level__: bool = false, __origin__ := Vector3.ZERO, __target__:=
 	body_mesh_inst.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	body_mesh_inst.mesh = ImmediateMesh.new()
 	add_child.call_deferred(body_mesh_inst, false, INTERNAL_MODE_BACK)
-
-	color = color
 
 	_refresh.call_deferred()

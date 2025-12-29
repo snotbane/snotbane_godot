@@ -5,5 +5,7 @@
 [resource]
 material = ExtResource("1_ohpf1")
 top_radius = 0.0
+bottom_radius = 0.333
+height = 1.0
 radial_segments = 16
 cap_top = false

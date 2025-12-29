@@ -30,7 +30,7 @@ func _init(__raycast__: RayCast3D = null, __point_radius__: float = 0.25) -> voi
 	block_line.set_instance_shader_parameter(&"color", Color.RED)
 	add_child.call_deferred(block_line, false, INTERNAL_MODE_BACK)
 
-	super._init(true, ARROW_MESH)
+	super._init(ARROW_MESH)
 
 	point_radius = __point_radius__
 

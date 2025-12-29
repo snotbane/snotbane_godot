@@ -14,27 +14,17 @@ var _visual_shape : int = 0
 				mesh_inst.mesh = ARROW_MESH
 				mesh_inst.rotation_degrees.x = -90
 
-var _color := Color.WHITE_SMOKE
-@export var color := Color.WHITE_SMOKE :
-	get: return _color
-	set(value):
-		_color = value
-		mesh_inst.set_instance_shader_parameter(&"color", value)
-		_on_color_set()
-func _on_color_set() -> void: pass
-
 var _radius : float
 @export var radius : float = 0.25 :
 	get: return _radius
 	set(value):
 		value = maxf(value, 0.0)
-		if _radius == value: return
 		_radius = value
 		mesh_inst.scale = Vector3.ONE * value
 		_on_radius_set()
 func _on_radius_set() -> void: pass
 
-func _init(__top_level__: bool = false, __radius__: float = 0.25) -> void:
-	super._init(__top_level__, DebugDraw3D.POINT_MESH)
+func _init(__radius__: float = 0.25) -> void:
+	super._init(DebugDraw3D.POINT_MESH)
 
 	radius = __radius__

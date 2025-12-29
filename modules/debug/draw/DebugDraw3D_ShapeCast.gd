@@ -40,7 +40,7 @@ func _init(__cast__: ShapeCast3D = null, __point_radius__: float = 10) -> void:
 	shape_mesh.material_override = MESH_MATERIAL
 	add_child.call_deferred(shape_mesh, false, INTERNAL_MODE_BACK)
 
-	super._init(true)
+	super._init()
 
 
 func _ready() -> void:

@@ -42,8 +42,8 @@ var visible_line : bool :
 var line : MeshInstance3D
 
 
-func _init(__top_level__: bool = true, __points__: PackedVector3Array = [], __points_radius__: float = 0.125) -> void:
-	super._init(__top_level__, POINT_MESH)
+func _init(__points__: PackedVector3Array = [], __points_radius__: float = 0.125) -> void:
+	super._init(POINT_MESH)
 
 	line = MeshInstance3D.new()
 	line.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

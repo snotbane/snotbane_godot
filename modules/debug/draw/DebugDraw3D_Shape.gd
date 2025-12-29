@@ -3,17 +3,10 @@
 
 var shape : Shape3D
 
-var _color := Color(1.0, 1.0, 1.0, 0.05)
-@export var color := Color(1.0, 1.0, 1.0, 0.05) :
-	get: return _color
-	set(value):
-		_color = value
-		mesh_inst.set_instance_shader_parameter(&"color", value)
-
 func _init(__shape__: Shape3D = null) -> void:
 	shape = __shape__
 
-	super._init(shape != null, null)
+	super._init(null)
 
 	mesh_inst.material_override = MESH_MATERIAL
 

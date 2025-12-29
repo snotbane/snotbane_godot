@@ -17,8 +17,8 @@ func _on_color_set() -> void:
 
 var origin : MeshInstance3D
 
-func _init(__top_level__: bool = true, __points__: PackedVector3Array = [], __points_radius__: float = 0.125) -> void:
-	super._init(__top_level__, __points__, __points_radius__)
+func _init(__points__: PackedVector3Array = [], __points_radius__: float = 0.125) -> void:
+	super._init(__points__, __points_radius__)
 
 	origin = MeshInstance3D.new()
 	origin.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF

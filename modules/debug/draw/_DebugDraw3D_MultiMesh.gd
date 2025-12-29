@@ -3,8 +3,8 @@
 
 var multimesh_inst : MultiMeshInstance3D
 
-func _init(__top_level__: bool, __mesh__: Mesh) -> void:
-	super._init(__top_level__)
+func _init(__mesh__: Mesh) -> void:
+	super._init()
 
 	multimesh_inst = MultiMeshInstance3D.new()
 	multimesh_inst.multimesh = MultiMesh.new()
