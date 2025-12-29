@@ -36,15 +36,15 @@ func _init() -> void:
 
 func _ready() -> void:
 	_refresh_visibility()
-	# if not OS.has_feature(&"release") or visible: return
+	if not OS.has_feature(&"release") or visible: return
 
-	# var substitute := Node3D.new()
-	# substitute.transform = transform
-	# for child in get_children():
-	# 	child.reparent(substitute, false)
+	var substitute := Node3D.new()
+	substitute.transform = transform
+	for child in get_children():
+		child.reparent(substitute, false)
 
-	# add_sibling(substitute)
-	# queue_free()
+	add_sibling(substitute)
+	queue_free()
 
 func _on_visibility_changed() -> void:
 	if Engine.is_editor_hint():
