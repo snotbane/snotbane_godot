@@ -1,20 +1,24 @@
 shader_type spatial;
-render_mode depth_test_disabled, depth_draw_always;
+render_mode depth_test_disabled, depth_draw_always, skip_vertex_transform;
 
 const float MARCH_THRESHOLD = 0.001;
 
-uniform vec3 base_color : source_color = vec3(0.333);
-instance uniform float dot_radius = 0.01;
-instance uniform float dot_spacing = 1.0;
-instance uniform float max_render_distance = 10.0;
+uniform sampler2D DEPTH_TEXTURE : hint_depth_texture;
+
 uniform int march_precision = 16;
-uniform float orientation_hinting_strength = 0.1;
+instance uniform vec3 color : source_color = vec3(0.333);
+instance uniform float radius = 0.01;
+instance uniform float spacing = 1.0;
+instance uniform float range = 10.0;
 
 float sdf_sphere(vec3 p, float r) {
     return length(p) - r;
 }
 
 void fragment() { 
+	float scene_depth_percent = texture(DEPTH_TEXTURE, SCREEN_UV).r;
+    float scene_depth = (PROJECTION_MATRIX[3][2] / (scene_depth_percent + PROJECTION_MATRIX[2][2]));
+	
 	// 1. Camera origin (world space)
     vec3 ro = CAMERA_POSITION_WORLD;
 
@@ -30,10 +34,10 @@ void fragment() {
 	bool render = false;
     for (int i = 0; i < march_precision; i++) {
         vec3 p = ro + rd * t;
-        vec3 nearest = round(p / dot_spacing) * dot_spacing;
-        float d = sdf_sphere(p - nearest, dot_radius);
+        vec3 nearest = round(p / spacing) * spacing;
+        float d = sdf_sphere(p - nearest, radius);
 		
-		if (sdf_sphere(ro - nearest, dot_radius) < 0.0) {
+		if (sdf_sphere(ro - nearest, radius) < 0.0) {
 			discard;
 			break;
 		}
@@ -41,11 +45,13 @@ void fragment() {
         if (d < MARCH_THRESHOLD) {
 			vec3 camera_direction = abs(CAMERA_DIRECTION_WORLD);
             NORMAL = normalize(p - nearest);
-            ALBEDO = mix(base_color, camera_direction, orientation_hinting_strength);
+            ALBEDO = color;
             render = true;
         }
+		
         t += d;
-        if (t > max_render_distance) discard;
+        if (t > range) discard;
+		if (t > scene_depth) break;
     }
 	if (!render) {
 		discard;
