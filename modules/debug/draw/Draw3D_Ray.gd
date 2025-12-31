@@ -29,6 +29,8 @@ func _init() -> void:
 		top_level = value
 		transform = t
 
+@export var follow_parent : bool = false
+
 var _head_size : float = 0.25
 @export_range(0.0, 1.0, 0.01, "or_greater") var head_size : float = 0.25 :
 	get: return _head_size
@@ -73,6 +75,11 @@ func _set_color(value: Color) -> void:
 func _ready() -> void:
 	super._ready()
 	_refresh()
+
+
+func _process(delta: float) -> void:
+	if follow_parent:
+		global_position = get_parent().global_position
 
 
 func _refresh() -> void:
