@@ -1,5 +1,5 @@
 
-## Simple, unordered dictionary of Descriptors
-class_name Inventory extends Node
+## Base class for a container that stores [Item]s or [ItemDefinition]s.
+@tool class_name Inventory extends Node
 
-@export var items : Dictionary
+signal modified
