@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://0eapfr5it6l8" path="res://addons/snotbane/modules/misc/MouseModeUser.gd" id="1_iglwo"]
 [ext_resource type="Script" uid="uid://br7j4h4ldm16k" path="res://addons/snotbane/modules/terminal/TerminalVisibilityController.gd" id="2_td1pb"]
+[ext_resource type="Script" uid="uid://bp7brhmeyhb8i" path="res://addons/snotbane/modules/terminal/TerminalLineEdit.gd" id="3_kfds7"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_a7ojq"]
 content_margin_left = 2.0
@@ -104,3 +105,4 @@ size_flags_vertical = 8
 placeholder_text = "/"
 keep_editing_on_text_submit = true
 backspace_deletes_composite_character_enabled = true
+script = ExtResource("3_kfds7")
