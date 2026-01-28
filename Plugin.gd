@@ -1,7 +1,7 @@
 
 @tool extends EditorPlugin
 
-const DEBUG_GHOST_AUTOLOAD_NAME := "snotbane_debug_ghost"
+const DEBUG_GHOST_AUTOLOAD_NAME := "debug_ghost_autoload"
 const DEBUG_GHOST_AUTOLOAD_PATH := "modules/debug/ghost/DebugGhostAutoload.gd"
 
 func _enable_plugin() -> void:

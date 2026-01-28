@@ -1,8 +1,5 @@
 
-class_name Snotbane extends Node
-
-
-const GHOST_GROUP := &"debug_ghost"
+class_name Snotbane
 
 #region Input Definitions
 

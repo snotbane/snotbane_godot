@@ -4,9 +4,6 @@ class_name DebugGhostAutoload extends Node
 ## Use this to control if the default input can be used in non-debug builds.
 const ALLOW_INPUT_IN_RELEASE_BUILD : bool = false
 
-static var GHOST_2D_SCENE : PackedScene = preload("uid://cv3vrsaxhhhkb")
-static var GHOST_3D_SCENE : PackedScene = preload("uid://cwcqawp5x05vt")
-
 static var inst : DebugGhostAutoload
 
 
@@ -27,7 +24,7 @@ func _input(event: InputEvent):
 func create_ghost(parent: Node = get_tree().root) -> void:
 	if ghost: printerr("Ghost %s already exists. Can't spawn a new one." % ghost); return
 	if self.get_tree().current_scene is Node2D:
-		ghost = GHOST_2D_SCENE.instantiate()
+		ghost = DebugGhost2D.instantiate_from_camera(parent)
 		self.get_tree().root.add_child(ghost)
 	elif self.get_tree().current_scene is Node3D:
 		ghost = DebugGhost3D.instantiate_from_camera(parent)
