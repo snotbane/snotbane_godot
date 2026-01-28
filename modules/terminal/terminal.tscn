@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://0eapfr5it6l8" path="res://addons/snotbane/modules/misc/MouseModeUser.gd" id="1_iglwo"]
 [ext_resource type="Script" uid="uid://br7j4h4ldm16k" path="res://addons/snotbane/modules/terminal/TerminalVisibilityController.gd" id="2_td1pb"]
+[ext_resource type="Script" uid="uid://cpwwo6awt2tc4" path="res://addons/snotbane/modules/terminal/TerminalCommandHost.gd" id="3_d1c5l"]
 [ext_resource type="Script" uid="uid://bp7brhmeyhb8i" path="res://addons/snotbane/modules/terminal/TerminalLineEdit.gd" id="3_kfds7"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_a7ojq"]
@@ -63,6 +64,9 @@ metadata/_custom_type_script = "uid://0eapfr5it6l8"
 [node name="visibility_controller" type="Node" parent="." unique_id=132113961]
 script = ExtResource("2_td1pb")
 
+[node name="command_host" type="Node" parent="." unique_id=1028385581]
+script = ExtResource("3_d1c5l")
+
 [node name="control" type="Control" parent="." unique_id=1739464643]
 layout_mode = 3
 anchors_preset = 15
@@ -105,4 +109,5 @@ size_flags_vertical = 8
 placeholder_text = "/"
 keep_editing_on_text_submit = true
 backspace_deletes_composite_character_enabled = true
+caret_blink = true
 script = ExtResource("3_kfds7")
