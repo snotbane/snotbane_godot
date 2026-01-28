@@ -1,8 +1,33 @@
 ## Allows the user to freely move around 2D scenes for debugging purposes.
-extends Node2D
+class_name DebugGhost2D extends Node2D
 
-## If enabled, the [member Input.mouse_mode] will be set to [member Input.MOUSE_MODE_VISIBLE] when this node is created (and reverted on deletion).
-@export var unlock_mouse_mode : bool = false
+static var inst : DebugGhost2D
+
+
+static func instantiate_from_camera(parent: Node, camera: Camera2D = parent.get_viewport().get_camera_2d()) -> DebugGhost2D:
+	var result : DebugGhost2D = DebugGhostAutoload.GHOST_2D_SCENE.instantiate()
+	parent.add_child(result)
+
+	result.global_transform = camera.global_transform
+	var new_camera : Camera2D = camera.duplicate(0)
+	new_camera.transform = Transform2D.IDENTITY
+	result.add_child(new_camera)
+	new_camera.make_current()
+
+	return result
+
+
+static func instantiate_from_transform(parent: Node, tform: Transform2D) -> DebugGhost2D:
+	var result : DebugGhost2D = DebugGhostAutoload.GHOST_2D_SCENE.instantiate()
+	parent.add_child(result)
+
+	result.global_transform = tform
+	var node := Camera2D.new()
+	result.add_child(node)
+	node.make_current()
+
+	return result
+
 
 ## Movement speed via keyboard/gamepad.
 @export var speed : float = 500.0
@@ -17,9 +42,7 @@ extends Node2D
 @export_range(0.0, 90.0, 5.0, "or_greater") var turn_interval_degrees : float = 0.0
 
 
-var revert_mouse_mode : Input.MouseMode
 var move_input_vector_mouse : Vector2
-var pawn : Node2D
 
 
 var use_turn_interval : bool :
@@ -29,36 +52,25 @@ var is_sprinting : bool :
 	get: return Input.is_action_pressed(Snotbane.INPUT_GHOST_SPRINT)
 
 
-func populate(__pawn: Node2D) -> void:
-	pawn = __pawn
+func _init() -> void:
+	if inst: inst.queue_free()
+
+	inst = self
 
 
-func populate_from_camera(camera: Camera2D) -> void:
-	change_mouse_mode()
-	self.global_transform = camera.global_transform
-	var node : Camera2D = camera.duplicate(0)
-	node.transform = Transform2D.IDENTITY
-	self.add_child(node)
-	node.make_current()
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		move_input_vector_mouse += event.screen_relative
+	elif event.is_action_pressed(Snotbane.INPUT_GHOST_TOGGLE):
+		queue_free()
 
+	if use_turn_interval:
+		if event.is_action_pressed(Snotbane.INPUT_GHOST_MOVE_UP):
+			self.global_rotation_degrees += turn_interval_degrees
+		elif event.is_action_pressed(Snotbane.INPUT_GHOST_MOVE_DOWN):
+			self.global_rotation_degrees -= turn_interval_degrees
 
-func populate_from_transform(__transform__: Transform2D) -> void:
-	change_mouse_mode()
-	self.global_transform = __transform__
-	var node := Camera2D.new()
-	self.add_child(node)
-	node.make_current()
-
-
-func change_mouse_mode() -> void:
-	revert_mouse_mode = Input.mouse_mode
-	if unlock_mouse_mode:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-
-
-func _exit_tree() -> void:
-	if unlock_mouse_mode and revert_mouse_mode != -1:
-		Input.mouse_mode = revert_mouse_mode
+	get_viewport().set_input_as_handled()
 
 
 func _process(delta: float) -> void:
@@ -74,14 +86,3 @@ func _process(delta: float) -> void:
 	move_input_vector_mouse = Vector2.ZERO
 
 	self.global_position += move_vector.rotated(self.global_rotation) * (sprint_multiplier if is_sprinting else 1.0) * delta
-
-
-
-func _input(event: InputEvent) -> void:
-	if use_turn_interval:
-		if event.is_action_pressed(Snotbane.INPUT_GHOST_MOVE_UP):
-			self.global_rotation_degrees += turn_interval_degrees
-		elif event.is_action_pressed(Snotbane.INPUT_GHOST_MOVE_DOWN):
-			self.global_rotation_degrees -= turn_interval_degrees
-	if event is InputEventMouseMotion:
-		move_input_vector_mouse += event.relative

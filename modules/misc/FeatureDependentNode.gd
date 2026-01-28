@@ -8,11 +8,15 @@ class_name FeatureDependentNode extends Node
 @export_enum("Any present", "All present", "None present") var keep_when : int = ANY
 enum { ANY, ALL, NONE }
 
-## List of features to check for. See [url https://docs.godotengine.org/en/stable/tutorials/export/feature_tags.html]
+## List of features to check for. See [url=https://docs.godotengine.org/en/stable/tutorials/export/feature_tags.html]the feature tags documentation[/url] for a list of viable values. If this list is empty, this node will not be modified; only the script will be removed.
 @export var features : PackedStringArray
 
 func _init() -> void:
-	var should_keep : bool = keep_when != ANY or features.is_empty()
+	if features.is_empty():
+		set_script(null)
+		return
+
+	var should_keep : bool = keep_when != ANY
 	for feature in features:
 		if OS.has_feature(feature):
 			match keep_when:
@@ -26,6 +30,6 @@ func _init() -> void:
 	if keep_invisible:
 		if get(&"visible") != null:
 			self.visible = should_keep
-		self.set_script(null)
+		set_script(null)
 	elif not should_keep:
 		queue_free()

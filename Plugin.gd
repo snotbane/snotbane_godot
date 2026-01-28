@@ -84,15 +84,21 @@ func configure_input() -> void:
 
 	var ghost_move_down_0 := InputEventKey.new()
 	ghost_move_down_0.physical_keycode = KEY_Q
+	var ghost_move_down_1 := InputEventKey.new()
+	ghost_move_down_1.physical_keycode = KEY_CTRL
 	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_MOVE_DOWN, [
 		ghost_move_down_0,
+		ghost_move_down_1,
 	])
 
 
 	var ghost_move_up_0 := InputEventKey.new()
 	ghost_move_up_0.physical_keycode = KEY_E
+	var ghost_move_up_1 := InputEventKey.new()
+	ghost_move_up_1.physical_keycode = KEY_SPACE
 	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_GHOST_MOVE_UP, [
 		ghost_move_up_0,
+		ghost_move_up_1,
 	])
 
 

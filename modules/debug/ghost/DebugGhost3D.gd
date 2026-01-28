@@ -1,17 +1,29 @@
 ## Allows the user to freely move around 3D scenes for debugging purposes.
-extends Node3D
+class_name DebugGhost3D extends Node3D
+
+static var inst : DebugGhost3D
 
 
-## If enabled, the [member Input.mouse_mode] will be set to [member Input.MOUSE_MODE_VISIBLE] when this node is created (and reverted on deletion).
-@export var unlock_mouse_mode : bool = false
+static func instantiate_from_camera(parent: Node, camera: Camera3D = parent.get_viewport().get_camera_3d()) -> DebugGhost3D:
+	var result : DebugGhost3D = DebugGhostAutoload.GHOST_3D_SCENE.instantiate()
+	parent.add_child(result)
+
+	result.global_transform = camera.global_transform
+	var new_camera := camera.duplicate(0)
+	new_camera.transform = Transform3D.IDENTITY
+	result.add_child(new_camera)
+	new_camera.make_current()
+
+	return result
+
 
 ## Movement speed.
-@export var speed : float = 1.0
+@export var speed : float = 5.0
 ## Speed multiplier while sprinting.
 @export var sprint_multiplier : float = 5.0
 
-## If enabled, camera will always move up along the global gravity up vector and laterally relative to that (Minecraft creative flight controls).
-@export var global_move_axis := true
+## If enabled, camera will always move up along the global gravity up vector and laterally relative to that (Minecraft creative controls).
+@export var global_move_axis : bool = false
 
 ## If enabled, the camera will always stay right side up. Otherwise, the camera may be turned upside down.
 @export var turn_clamp_pitch : bool = true
@@ -21,7 +33,6 @@ extends Node3D
 @export var turn_speed_mouse : float = 10.0
 
 
-var revert_mouse_mode : Input.MouseMode
 var turn_input_vector_mouse : Vector2
 
 
@@ -29,24 +40,19 @@ var is_sprinting : bool :
 	get: return Input.is_action_pressed(Snotbane.INPUT_GHOST_SPRINT)
 
 
-func populate_from_camera(camera: Camera3D) -> void:
-	change_mouse_mode()
-	self.global_transform = camera.global_transform
-	var node := camera.duplicate(0)
-	node.transform = Transform3D.IDENTITY
-	self.add_child(node)
-	node.make_current()
+func _init() -> void:
+	if inst: inst.queue_free()
+
+	inst = self
 
 
-func change_mouse_mode() -> void:
-	revert_mouse_mode = Input.mouse_mode
-	if unlock_mouse_mode:
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		turn_input_vector_mouse += event.screen_relative
+	elif event.is_action_pressed(Snotbane.INPUT_GHOST_TOGGLE):
+		queue_free()
 
-
-func _exit_tree() -> void:
-	if unlock_mouse_mode:
-		Input.mouse_mode = revert_mouse_mode
+	get_viewport().set_input_as_handled()
 
 
 func _process(delta: float) -> void:
@@ -96,12 +102,3 @@ func _process(delta: float) -> void:
 	self.global_position += move_quat * move_vector * speed * (sprint_multiplier if is_sprinting else 1.0) * delta
 
 	#endregion
-
-func _input(event: InputEvent) -> void:
-	if event.is_action_pressed(&"ui_cancel"):
-		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED else Input.MOUSE_MODE_CAPTURED
-	# if event is InputEventMouseButton:
-	# 	if event.button_index == MOUSE_BUTTON_LEFT:
-	# 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-	if event is InputEventMouseMotion:
-		turn_input_vector_mouse += event.relative

@@ -1,18 +1,11 @@
-## Moves a node (i.e. the player) to match the editor's view on game start. Only works once and in an editor build. Also passes some controls along to debug ghost cameras.
-@tool extends Node3D
-
-static var can_be_activated : bool :
-	get: return OS.has_feature("editor") and Time.get_ticks_msec() < 1000
-
-
-## If enabled, this node will always activate. Otherwise, only activate when visible.
-@export var activate_if_invisible : bool = false
+## Moves a node (e.g. the player) to match the editor's view on game start. Use [member visible] to toggle whether or not this functionality is active. Only works once and in editor runtime.
+@tool class_name DebugPlayFromView3D extends Node3D
 
 ## If enabled, this node will spawn a [DebugGhost3D] node on startup.
 @export var start_in_debug_ghost_mode : bool = false
 
 ## If enabled, [member position_node] will be moved to this node on [method _ready] (i.e. the editor viewport center).
-@export var move_pawn_node : bool = true
+@export var transform_selected_nodes : bool = true
 
 ## If set, this node will move to the editor view transform on [methos _ready]. Set this to your player's base node.
 @export var position_node : Node3D
@@ -24,18 +17,18 @@ static var can_be_activated : bool :
 @export var rotation_node_y : Node3D
 
 
-var visible_or_always : bool :
-	get: return self.visible or activate_if_invisible
+func _init() -> void:
+	set_meta("_edit_lock_", true)
 
 
 func _ready() -> void:
-	if not can_be_activated: return
+	if OS.has_feature("editor_runtime") and visible:
+		if transform_selected_nodes:
+			activate()
 
-	if move_pawn_node and visible_or_always:
-		self.activate()
-
-	if start_in_debug_ghost_mode and visible_or_always and DebugGhostAutoload.inst.ghost == null:
-		create_ghost.call_deferred()
+		if start_in_debug_ghost_mode:
+			create_ghost.call_deferred(get_parent())
+	if not Engine.is_editor_hint(): queue_free()
 
 
 func _process(_delta: float) -> void:
@@ -45,12 +38,11 @@ func _process(_delta: float) -> void:
 	self.global_transform = editor_camera.global_transform
 
 
-func activate(to: Node3D = self) -> void:
+func activate() -> void:
 	if position_node: position_node.global_position = self.global_position
 	if rotation_node_x: rotation_node_x.global_rotation.x = self.global_rotation.x
 	if rotation_node_y: rotation_node_y.global_rotation.y = self.global_rotation.y
 
 
-func create_ghost() -> void:
-	DebugGhostAutoload.inst.create_ghost_3d()
-	DebugGhostAutoload.inst.ghost.populate_from_camera(self.get_viewport().get_camera_3d())
+func create_ghost(parent: Node) -> void:
+	DebugGhost3D.instantiate_from_camera(parent)
