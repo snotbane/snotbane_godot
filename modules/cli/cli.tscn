@@ -1,0 +1,107 @@
+[gd_scene format=3 uid="uid://c1nlgw0r4lj06"]
+
+[ext_resource type="Script" uid="uid://0eapfr5it6l8" path="res://addons/snotbane/modules/misc/MouseModeUser.gd" id="1_7i5fv"]
+[ext_resource type="Script" uid="uid://br7j4h4ldm16k" path="res://addons/snotbane/modules/cli/CliVisibilityController.gd" id="2_a7ojq"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_a7ojq"]
+content_margin_left = 2.0
+content_margin_top = 1.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_a7ojq"]
+content_margin_left = 2.0
+content_margin_top = 1.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_alygk"]
+content_margin_left = 2.0
+content_margin_top = 1.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+bg_color = Color(0.1, 0.1, 0.1, 0.3)
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 0.3)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7i5fv"]
+bg_color = Color(0.16078432, 0.16078432, 0.16078432, 1)
+
+[sub_resource type="SystemFont" id="SystemFont_7i5fv"]
+font_names = PackedStringArray("Fira Code", "Menlo", "Monospace")
+subpixel_positioning = 0
+
+[sub_resource type="Theme" id="Theme_7i5fv"]
+default_font = SubResource("SystemFont_7i5fv")
+default_font_size = 10
+LineEdit/styles/focus = SubResource("StyleBoxEmpty_a7ojq")
+LineEdit/styles/normal = SubResource("StyleBoxFlat_a7ojq")
+LineEdit/styles/read_only = SubResource("StyleBoxFlat_alygk")
+MarginContainer/constants/margin_bottom = 4
+MarginContainer/constants/margin_left = 4
+MarginContainer/constants/margin_right = 4
+MarginContainer/constants/margin_top = 4
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_7i5fv")
+
+[node name="cli" type="CanvasLayer" unique_id=1691145269]
+layer = 127
+
+[node name="mouse_mode_user" type="Node" parent="." unique_id=670687366 node_paths=PackedStringArray("visible_node")]
+script = ExtResource("1_7i5fv")
+visible_node = NodePath("..")
+visibility_on_ready = 2
+priority = 128
+metadata/_custom_type_script = "uid://0eapfr5it6l8"
+
+[node name="visibility_controller" type="Node" parent="." unique_id=132113961]
+script = ExtResource("2_a7ojq")
+
+[node name="control" type="Control" parent="." unique_id=1739464643]
+visible = false
+layout_mode = 3
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+theme = SubResource("Theme_7i5fv")
+
+[node name="panel_container" type="PanelContainer" parent="control" unique_id=1738177572]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -25.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="margin_container" type="MarginContainer" parent="control/panel_container" unique_id=1444565121]
+layout_mode = 2
+size_flags_vertical = 8
+
+[node name="v_box_container" type="VBoxContainer" parent="control/panel_container/margin_container" unique_id=371518061]
+layout_mode = 2
+size_flags_vertical = 8
+alignment = 2
+
+[node name="line_edit" type="LineEdit" parent="control/panel_container/margin_container/v_box_container" unique_id=68461926]
+layout_mode = 2
+size_flags_vertical = 8
+placeholder_text = "/"
+keep_editing_on_text_submit = true
+backspace_deletes_composite_character_enabled = true

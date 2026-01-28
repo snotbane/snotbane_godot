@@ -1,16 +1,24 @@
 
 @tool extends EditorPlugin
 
-const DEBUG_GHOST_AUTOLOAD_NAME := "debug_ghost_autoload"
-const DEBUG_GHOST_AUTOLOAD_PATH := "modules/debug/ghost/DebugGhostAutoload.gd"
-
 func _enable_plugin() -> void:
-	self.add_autoload_singleton(DEBUG_GHOST_AUTOLOAD_NAME, DEBUG_GHOST_AUTOLOAD_PATH)
+	ProjectSettings.set_setting(MouseModeUser.PROJECT_SETTING_HINT["name"], Input.MouseMode.MOUSE_MODE_VISIBLE)
+	ProjectSettings.add_property_info(MouseModeUser.PROJECT_SETTING_HINT)
+
+	ProjectSettings.save()
+
+	add_autoload_singleton(DebugGhostAutoload.AUTOLOAD_NAME, DebugGhostAutoload.AUTOLOAD_PATH)
+	add_autoload_singleton(CliAutoload.AUTOLOAD_NAME, CliAutoload.AUTOLOAD_PATH)
 
 	configure_input()
 
 func _disable_plugin() -> void:
-	self.remove_autoload_singleton(DEBUG_GHOST_AUTOLOAD_NAME)
+	ProjectSettings.set_setting(MouseModeUser.PROJECT_SETTING_HINT["name"], null)
+
+	ProjectSettings.save()
+
+	remove_autoload_singleton(DebugGhostAutoload.AUTOLOAD_NAME)
+	remove_autoload_singleton(CliAutoload.AUTOLOAD_NAME)
 
 func configure_input() -> void:
 	var quit_0 := InputEventKey.new()

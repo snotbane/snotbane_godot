@@ -1,6 +1,9 @@
 
 class_name DebugGhostAutoload extends Node
 
+const AUTOLOAD_NAME := "debug_ghost_autoload"
+const AUTOLOAD_PATH := "modules/debug/ghost/DebugGhostAutoload.gd"
+
 ## Use this to control if the default input can be used in non-debug builds.
 const ALLOW_INPUT_IN_RELEASE_BUILD : bool = false
 
