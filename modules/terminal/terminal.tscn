@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://c1nlgw0r4lj06"]
 
-[ext_resource type="Script" uid="uid://0eapfr5it6l8" path="res://addons/snotbane/modules/misc/MouseModeUser.gd" id="1_7i5fv"]
-[ext_resource type="Script" uid="uid://br7j4h4ldm16k" path="res://addons/snotbane/modules/cli/CliVisibilityController.gd" id="2_a7ojq"]
+[ext_resource type="Script" uid="uid://0eapfr5it6l8" path="res://addons/snotbane/modules/misc/MouseModeUser.gd" id="1_iglwo"]
+[ext_resource type="Script" uid="uid://br7j4h4ldm16k" path="res://addons/snotbane/modules/terminal/TerminalVisibilityController.gd" id="2_td1pb"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_a7ojq"]
 content_margin_left = 2.0
@@ -49,18 +49,18 @@ MarginContainer/constants/margin_right = 2
 MarginContainer/constants/margin_top = 2
 PanelContainer/styles/panel = SubResource("StyleBoxFlat_7i5fv")
 
-[node name="cli" type="CanvasLayer" unique_id=1691145269]
+[node name="terminal" type="CanvasLayer" unique_id=1691145269]
 layer = 127
 
 [node name="mouse_mode_user" type="Node" parent="." unique_id=670687366 node_paths=PackedStringArray("visible_node")]
-script = ExtResource("1_7i5fv")
+script = ExtResource("1_iglwo")
 visible_node = NodePath("..")
 visibility_on_ready = 2
 priority = 128
 metadata/_custom_type_script = "uid://0eapfr5it6l8"
 
 [node name="visibility_controller" type="Node" parent="." unique_id=132113961]
-script = ExtResource("2_a7ojq")
+script = ExtResource("2_td1pb")
 
 [node name="control" type="Control" parent="." unique_id=1739464643]
 layout_mode = 3

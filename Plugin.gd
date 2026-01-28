@@ -8,7 +8,7 @@ func _enable_plugin() -> void:
 	ProjectSettings.save()
 
 	add_autoload_singleton(DebugGhostAutoload.AUTOLOAD_NAME, DebugGhostAutoload.AUTOLOAD_PATH)
-	add_autoload_singleton(CliAutoload.AUTOLOAD_NAME, CliAutoload.AUTOLOAD_PATH)
+	add_autoload_singleton(TerminalAutoload.AUTOLOAD_NAME, TerminalAutoload.AUTOLOAD_PATH)
 
 	configure_input()
 
@@ -18,7 +18,7 @@ func _disable_plugin() -> void:
 	ProjectSettings.save()
 
 	remove_autoload_singleton(DebugGhostAutoload.AUTOLOAD_NAME)
-	remove_autoload_singleton(CliAutoload.AUTOLOAD_NAME)
+	remove_autoload_singleton(TerminalAutoload.AUTOLOAD_NAME)
 
 func configure_input() -> void:
 	var quit_0 := InputEventKey.new()
