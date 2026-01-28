@@ -14,10 +14,6 @@
 @export var rotation_node : Node2D
 
 
-func _init() -> void:
-	set_meta("_edit_lock_", true)
-
-
 func _ready() -> void:
 	if OS.has_feature("editor_runtime") and visible:
 		if transform_selected_nodes:
@@ -41,4 +37,4 @@ func activate() -> void:
 
 
 func create_ghost(parent: Node, tform: Transform2D) -> void:
-	DebugGhost2D.instantiate_from_transform(parent, tform)
+	DebugGhost2D.instantiate_from_camera(parent, parent.get_viewport().get_camera_2d(), tform)

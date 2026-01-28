@@ -7,11 +7,11 @@ static var DEFAULT_SCENE : PackedScene :
 static var inst : DebugGhost3D
 
 
-static func instantiate_from_camera(parent: Node, camera: Camera3D = parent.get_viewport().get_camera_3d()) -> DebugGhost3D:
+static func instantiate_from_camera(parent: Node, camera: Camera3D = parent.get_viewport().get_camera_3d(), tform: Transform3D = camera.global_transform) -> DebugGhost3D:
 	var result : DebugGhost3D = DEFAULT_SCENE.instantiate()
 	parent.add_child(result)
 
-	result.global_transform = camera.global_transform
+	result.global_transform = tform
 	var new_camera := camera.duplicate(0)
 	new_camera.transform = Transform3D.IDENTITY
 	result.add_child(new_camera)

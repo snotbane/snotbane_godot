@@ -7,27 +7,15 @@ static var DEFAULT_SCENE : PackedScene :
 static var inst : DebugGhost2D
 
 
-static func instantiate_from_camera(parent: Node, camera: Camera2D = parent.get_viewport().get_camera_2d()) -> DebugGhost2D:
-	var result : DebugGhost2D = DEFAULT_SCENE.instantiate()
-	parent.add_child(result)
-
-	result.global_transform = camera.global_transform
-	var new_camera : Camera2D = camera.duplicate(0)
-	new_camera.transform = Transform2D.IDENTITY
-	result.add_child(new_camera)
-	new_camera.make_current()
-
-	return result
-
-
-static func instantiate_from_transform(parent: Node, tform: Transform2D) -> DebugGhost2D:
+static func instantiate_from_camera(parent: Node, camera: Camera2D = parent.get_viewport().get_camera_2d(), tform: Transform2D = camera.global_transform) -> DebugGhost2D:
 	var result : DebugGhost2D = DEFAULT_SCENE.instantiate()
 	parent.add_child(result)
 
 	result.global_transform = tform
-	var node := Camera2D.new()
-	result.add_child(node)
-	node.make_current()
+	var new_camera : Camera2D = camera.duplicate(0)
+	new_camera.transform = Transform2D.IDENTITY
+	result.add_child(new_camera)
+	new_camera.make_current()
 
 	return result
 

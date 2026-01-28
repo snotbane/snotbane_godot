@@ -17,17 +17,13 @@
 @export var rotation_node_y : Node3D
 
 
-func _init() -> void:
-	set_meta("_edit_lock_", true)
-
-
 func _ready() -> void:
 	if OS.has_feature("editor_runtime") and visible:
 		if transform_selected_nodes:
 			activate()
 
 		if start_in_debug_ghost_mode:
-			create_ghost.call_deferred(get_parent())
+			create_ghost.call_deferred(get_parent(), global_transform)
 	if not Engine.is_editor_hint(): queue_free()
 
 
@@ -44,5 +40,5 @@ func activate() -> void:
 	if rotation_node_y: rotation_node_y.global_rotation.y = self.global_rotation.y
 
 
-func create_ghost(parent: Node) -> void:
-	DebugGhost3D.instantiate_from_camera(parent)
+func create_ghost(parent: Node, tform: Transform3D) -> void:
+	DebugGhost3D.instantiate_from_camera(parent, parent.get_viewport().get_camera_3d(), tform)
