@@ -17,13 +17,13 @@ class TerminalCommand extends Object:
 		TerminalCommandHost.registry[__name__] = self
 
 	func invoke(args: Array) -> void:
-		if args.size() != method.get_argument_count() > args.size() + default_args.size():
-			printerr("Invalid arguments: not enough arguments/defaults present.")
-			return
-		# args.resize()
-		while args.size() < method.get_argument_count():
-			args.push_back()
-		# while args.size() < registry[command_name].default_args.size():
+		# if args.size() != method.get_argument_count() > args.size() + default_args.size():
+		# 	printerr("Invalid arguments: not enough arguments/defaults present.")
+		# 	return
+		# # args.resize()
+		# while args.size() < method.get_argument_count():
+		# 	args.push_back()
+		# # while args.size() < registry[command_name].default_args.size():
 		method.callv(args)
 
 

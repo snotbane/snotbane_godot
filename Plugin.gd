@@ -41,7 +41,7 @@ func configure_input() -> void:
 
 	var cli_toggle_0 := InputEventKey.new()
 	cli_toggle_0.physical_keycode = KEY_QUOTELEFT
-	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_CLI_TOGGLE, [
+	Snotbane.add_default_input_binding(Snotbane.SETTING_INPUT_TERMINAL_TOGGLE, [
 		cli_toggle_0
 	])
 
