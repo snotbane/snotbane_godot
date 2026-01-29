@@ -34,7 +34,7 @@ border_width_right = 1
 border_width_bottom = 1
 
 [node name="debug_canvas" type="CanvasLayer" unique_id=1129923819]
-layer = 128
+layer = 127
 
 [node name="debug_border" type="Control" parent="." unique_id=200107954]
 layout_mode = 3

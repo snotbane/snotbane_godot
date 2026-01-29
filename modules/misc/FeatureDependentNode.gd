@@ -1,5 +1,8 @@
-## This node will only exist (or be visible) if certain feature tags are present.
+## This node (or its parent, if desired) will only exist (or be visible) if certain feature tags are present.
 class_name FeatureDependentNode extends Node
+
+## If enabled, this node's parent will be affected AND this node will be deleted after [member _ready], regardless of the result.
+@export var affect_parent : bool = false
 
 ## If enabled, this node will not be destroyed but it will be kept and made invisible. Only works for nodes that have the [member visible] property.
 @export var keep_invisible : bool = false
@@ -11,7 +14,10 @@ enum { ANY, ALL, NONE }
 ## List of features to check for. See [url=https://docs.godotengine.org/en/stable/tutorials/export/feature_tags.html]the feature tags documentation[/url] for a list of viable values. If this list is empty, this node will not be modified.
 @export var features : PackedStringArray
 
-func _init() -> void:
+var affected_node : Node :
+	get: return get_parent() if affect_parent else self
+
+func _ready() -> void:
 	if features.is_empty(): return
 
 	var should_keep : bool = keep_when != ANY
@@ -26,7 +32,9 @@ func _init() -> void:
 				ALL: should_keep = false; break
 
 	if keep_invisible:
-		if get(&"visible") != null:
-			self.visible = should_keep
+		if affected_node.get(&"visible") != null:
+			affected_node.visible = should_keep
 	elif not should_keep:
-		queue_free()
+		affected_node.queue_free()
+
+	if affect_parent: self.queue_free()

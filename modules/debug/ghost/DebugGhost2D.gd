@@ -33,14 +33,14 @@ static func instantiate_from_camera(parent: Node, camera: Camera2D = parent.get_
 @export_range(0.0, 90.0, 5.0, "or_greater") var turn_interval_degrees : float = 0.0
 
 
+var move_input_vector : Vector2
 var move_input_vector_mouse : Vector2
+var is_sprinting : bool
 
 
 var use_turn_interval : bool :
 	get: return not is_zero_approx(turn_interval_degrees)
 
-var is_sprinting : bool :
-	get: return Input.is_action_pressed(Snotbane.INPUT_GHOST_SPRINT)
 
 
 func _init() -> void:
@@ -49,19 +49,61 @@ func _init() -> void:
 	inst = self
 
 
-func _input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion:
-		move_input_vector_mouse += event.screen_relative
+func _unhandled_input(event: InputEvent) -> void:
+	if InputNode.is_input_restricted(self):
+		move_input_vector = Vector2.ZERO
+		is_sprinting = false
+		return
 	elif event.is_action_pressed(Snotbane.INPUT_GHOST_TOGGLE):
 		queue_free()
-
-	if use_turn_interval:
-		if event.is_action_pressed(Snotbane.INPUT_GHOST_MOVE_UP):
-			self.global_rotation_degrees += turn_interval_degrees
-		elif event.is_action_pressed(Snotbane.INPUT_GHOST_MOVE_DOWN):
-			self.global_rotation_degrees -= turn_interval_degrees
+		get_viewport().set_input_as_handled()
+	elif (
+		event.is_action(Snotbane.INPUT_GHOST_MOVE_LEFT) or
+		event.is_action(Snotbane.INPUT_GHOST_MOVE_RIGHT) or
+		event.is_action(Snotbane.INPUT_GHOST_MOVE_FORWARD) or
+		event.is_action(Snotbane.INPUT_GHOST_MOVE_BACK) or
+		event.is_action(Snotbane.INPUT_GHOST_CAMERA_LEFT) or
+		event.is_action(Snotbane.INPUT_GHOST_CAMERA_RIGHT) or
+		event.is_action(Snotbane.INPUT_GHOST_CAMERA_DOWN) or
+		event.is_action(Snotbane.INPUT_GHOST_CAMERA_UP)
+	):
+		get_viewport().set_input_as_handled()
+		move_input_vector = (
+			Input.get_vector(
+				Snotbane.INPUT_GHOST_MOVE_LEFT,
+				Snotbane.INPUT_GHOST_MOVE_RIGHT,
+				Snotbane.INPUT_GHOST_MOVE_FORWARD,
+				Snotbane.INPUT_GHOST_MOVE_BACK
+			) +	Input.get_vector(
+				Snotbane.INPUT_GHOST_CAMERA_LEFT,
+				Snotbane.INPUT_GHOST_CAMERA_RIGHT,
+				Snotbane.INPUT_GHOST_CAMERA_UP,
+				Snotbane.INPUT_GHOST_CAMERA_DOWN
+			)
+		)
+	elif (
+		event.is_action(Snotbane.INPUT_GHOST_MOVE_DOWN) or
+		event.is_action(Snotbane.INPUT_GHOST_MOVE_UP)
+	):
+		get_viewport().set_input_as_handled()
+		if use_turn_interval:
+			if event.is_action_pressed(Snotbane.INPUT_GHOST_MOVE_UP):
+				self.global_rotation_degrees += turn_interval_degrees
+			elif event.is_action_pressed(Snotbane.INPUT_GHOST_MOVE_DOWN):
+				self.global_rotation_degrees -= turn_interval_degrees
+	elif event.is_action(Snotbane.INPUT_GHOST_SPRINT):
+		is_sprinting = event.is_pressed()
+		get_viewport().set_input_as_handled()
 
 	get_viewport().set_input_as_handled()
+
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		if Input.mouse_mode != Input.MouseMode.MOUSE_MODE_CAPTURED: return
+
+		move_input_vector_mouse += event.screen_relative
+		get_viewport().set_input_as_handled()
 
 
 func _process(delta: float) -> void:
@@ -69,11 +111,7 @@ func _process(delta: float) -> void:
 		var turn_axis := Input.get_axis(Snotbane.INPUT_GHOST_MOVE_UP, Snotbane.INPUT_GHOST_MOVE_DOWN)
 		self.global_rotation_degrees += turn_axis * turn_speed_degrees * delta
 
-	var move_vector := Vector2.ZERO
-	move_vector += (Input.get_vector(Snotbane.INPUT_GHOST_MOVE_LEFT, Snotbane.INPUT_GHOST_MOVE_RIGHT, Snotbane.INPUT_GHOST_MOVE_FORWARD, Snotbane.INPUT_GHOST_MOVE_BACK) + Input.get_vector(Snotbane.INPUT_GHOST_CAMERA_LEFT, Snotbane.INPUT_GHOST_CAMERA_RIGHT, Snotbane.INPUT_GHOST_CAMERA_UP, Snotbane.INPUT_GHOST_CAMERA_DOWN)) * speed
-
-	if Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		move_vector += move_input_vector_mouse * speed_mouse
+	var move_vector := move_input_vector * speed + move_input_vector_mouse * speed_mouse
 	move_input_vector_mouse = Vector2.ZERO
 
 	self.global_position += move_vector.rotated(self.global_rotation) * (sprint_multiplier if is_sprinting else 1.0) * delta
