@@ -3,7 +3,7 @@ extends LineEdit
 
 const HISTORY_PATH := "user://logs/terminal_history.cfg"
 
-@export var history_max_size : int = 256
+@export_range(0, 256, 1, "or_greater") var history_max_size : int = 256
 
 var history_file : ConfigFile
 var history : PackedStringArray
