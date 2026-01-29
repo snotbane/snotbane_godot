@@ -60,6 +60,7 @@ TerminalLog/colors/message_color_quiet = Color(0.6627451, 0.6627451, 0.6627451, 
 TerminalLog/colors/message_color_warning = Color(1, 1, 0, 1)
 
 [node name="terminal" type="CanvasLayer" unique_id=1691145269]
+process_mode = 3
 layer = 128
 
 [node name="feature_dependency" type="Node" parent="." unique_id=143208314]

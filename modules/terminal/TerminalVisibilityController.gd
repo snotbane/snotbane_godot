@@ -1,6 +1,9 @@
 
 extends Node
 
+## If enabled, the game will pause when the terminal is visible.
+@export var pause_when_visible : bool = false
+
 ## Determines which features are available in the terminal. Features can be cycled through using [member Snotbane.INPUT_CLI_TOGGLE].
 @export_flags("Mini:1","Full:2") var features : int = 2
 
@@ -28,6 +31,8 @@ var active_panel : int :
 			full_panel.visible = active_panel & 2 != 0
 			mini_panel.visible = active_panel != 0
 			parent.visible = mini_panel.visible
+
+		get_tree().paused = parent.visible and pause_when_visible
 
 
 func _input(event: InputEvent) -> void:
