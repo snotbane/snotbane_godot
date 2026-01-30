@@ -1,40 +1,157 @@
-
+## Add this node to one of many kinds of [Control]s in order to store its values in a [ConfigFile] automatically. Data is loaded on ready, or whenever the parent [Control] becomes visible. can be saved manually or automatically.
 class_name SettingTracker extends Node
+
+
+const STORAGE_DIR := "user://settings"
+
+
+static var storage_registry: Dictionary[String, ConfigFile]
+
+
+static func _static_init() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(STORAGE_DIR))
+
+
+signal override_changed(is_overridden: bool)
+
+
+@export_enum("No Autosave", "On Hidden", "On Focus Exited", "On Value Changed") var autosave : int = ON_VALUE_CHANGED
+enum {
+	## This setting will not save automatically. Call [member commit()] on any setting in order to save changes to all settings with the same [member storage_path].
+	NO_AUTOSAVE,
+	## This setting will save when its parent is hidden.
+	ON_HIDDEN,
+	## This setting will save when its parent's [member focus_exited] signal emits.
+	ON_FOCUS_EXITED,
+	## This setting will save when its parent's value changes, depending on what kind of [Control] it is.
+	ON_VALUE_CHANGED,
+}
 
 ## The default path for this setting to exist in. The path will be made relative to `user://settings/`
 @export var storage_name : String = "default"
-var storage_path : String :
-	get: return "user://settings".path_join(storage_path + ".cfg")
-var storage_file : ConfigFile
 
-@export var category : String
+var storage_path : String :
+	get: return STORAGE_DIR.path_join(storage_name + ".cfg")
+
+var storage_file : ConfigFile :
+	get:
+		if not storage_registry.has(storage_path):
+			storage_registry[storage_path] = ConfigFile.new()
+			var err := storage_registry[storage_path].load(storage_path)
+			match err:
+				OK:
+					pass
+
+				ERR_FILE_NOT_FOUND:
+					storage_file.save(storage_path)
+
+				_:
+					printerr("Couldn't load settings config file '%s': error code %s" % [storage_path, err])
+
+		return storage_registry[storage_path]
+
+## The section in [member storage_file] to place this in.
+@export var section : String
+
+## The key in the [member storage_file]'s [member section] to store the value to.
+@export var key : String
+
+
+var _value_is_changing : bool
+var _value_prev : Variant
+var value : Variant :
+	get:
+		if parent is Range:
+			return parent.value
+
+		elif parent is LineEdit:
+			return parent.text
+
+		else:
+			return null
+
+	set(new_value):
+		if value == new_value: return
+
+		if parent is Range:
+			parent.value = new_value
+
+		elif parent is LineEdit:
+			parent.text = new_value
+			_parent_value_changed()
+
+
+var _default_value : Variant
+var value_is_default : bool :
+	get: return value == _default_value
+
 
 @onready var parent : Control = get_parent()
 var parent_is_valid : bool :
 	get: return (
-		parent is LineEdit
+			parent is LineEdit
+		or	parent is Range
 	)
 
+
 func _ready() -> void:
-	if not parent_is_valid:
-		printerr("SettingTracker (%s) must be the child of one of the following types: [ LineEdit ]" % name)
+	assert(not key.is_empty(), "SettingTracker (%s) needs a setting key." % self)
+	assert(parent_is_valid, "SettingTracker (%s) must be the child of one of the following types: [ LineEdit ]" % self)
 
-	storage_file = ConfigFile.new()
+	_default_value = value
+	_value_prev = _default_value
 
-	var err := storage_file.load(storage_path)
-	match err:
-		ERR_FILE_NOT_FOUND: storage_file.save(storage_path)
+	if parent is Range:
+		parent.value_changed.connect(_parent_value_changed)
 
-	value = storage_file.get_value(category, name, NAN)
+	elif parent is LineEdit:
+		parent.text_changed.connect(_parent_value_changed.unbind(1))
+
+	match autosave:
+		ON_FOCUS_EXITED:
+			parent.focus_exited.connect(commit)
+
+	storage_file.load(storage_path)
+	retrieve()
+
+	parent.visibility_changed.connect(_parent_visibility_changed)
 
 
-var value : Variant :
-	get:
-		if parent is LineEdit:
-			return parent.text
-		return null
-	set(new_value):
-		if new_value
+func _parent_visibility_changed() -> void:
+	if parent.visible:
+		retrieve()
+	elif autosave == ON_HIDDEN:
+		commit()
 
-		if parent is LineEdit:
-			parent.text = new_value
+
+func _parent_value_changed() -> void:
+	if _value_prev == _default_value and value != _default_value:
+		override_changed.emit(true)
+
+	elif _value_prev != _default_value and value == _default_value:
+		override_changed.emit(false)
+
+	_value_prev = value
+
+	match autosave:
+		ON_VALUE_CHANGED:
+			commit()
+
+
+## Retrieves the value from the config, provided that it is loaded and up to date.
+func retrieve() -> void:
+	if not storage_file.has_section_key(section, key): return
+
+	value = storage_file.get_value(section, key)
+
+
+## Sets the value to the config and saves it.
+func commit() -> void:
+	storage_file.set_value(section, key, value)
+	storage_file.save(storage_path)
+
+
+## Resets the value to the default value.
+func reset() -> void:
+	value = _default_value
+	_parent_value_changed()
