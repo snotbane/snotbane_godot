@@ -10,6 +10,9 @@ const SECONDS_IN_MINUTE := 60
 const K_TIME_CREATED := &"time_created"
 const K_TIME_MODIFIED := &"time_modified"
 
+const KEY_SIZE := 16
+const IV_SIZE := 16
+
 static var NOW : int :
 	get: return floori(Time.get_unix_time_from_system())
 
@@ -155,6 +158,11 @@ static func deserialize_json(json: Variant, context: Object = null) -> Variant:
 
 signal modified
 
+## If set, this resource will be encrypted when saved.
+@export var _encryption_password : String
+var _encryption_password_quantized : String :
+	get: return _encryption_password # TODO: ensure it's the same size as KEY_SIZE
+
 @export_storage var _save_path : String
 func generate_save_path(folder := "user://", name := str(randi())) -> String:
 	var result := ""
@@ -174,7 +182,11 @@ var file_exists : bool :
 var path_ext : String :
 	get: return _get_path_ext()
 func _get_path_ext() -> String:
-	return ".json"
+	return ".json" if _encryption_password.is_empty() else ".dat"
+
+
+var aes := AESContext.new()
+var crypto := Crypto.new()
 
 
 func _init(__save_path__: String = generate_save_path()) -> void:
@@ -222,7 +234,24 @@ func save_to_file(path: String = _save_path) -> void:
 	modified.emit()
 ## Saves the given stringified JSON text to the file.
 func _save_to_file(file: FileAccess, json: String) -> void:
-	file.store_string(json)
+	if _encryption_password.is_empty():
+		file.store_string(json)
+	else:
+		json += " ".repeat(KEY_SIZE - (json.length() % KEY_SIZE))
+
+		var key := _encryption_password_quantized.to_utf8_buffer()
+		var iv := crypto.generate_random_bytes(IV_SIZE)
+		var decrypted := json.to_utf8_buffer()
+
+		aes.start(AESContext.MODE_CBC_ENCRYPT, key, iv)
+		var encrypted := aes.update(decrypted)
+		aes.finish()
+
+		var result := PackedByteArray()
+		result.append_array(iv)
+		result.append_array(encrypted)
+
+		file.store_buffer(result)
 
 
 func load_from_file(path: String = _save_path) -> void:
@@ -237,4 +266,17 @@ func load_from_file(path: String = _save_path) -> void:
 	json_import(json)
 ## Loads the given file as stringified JSON text.
 func _load_from_file(file: FileAccess) -> String:
-	return file.get_as_text()
+	if _encryption_password.is_empty():
+		return file.get_as_text()
+	else:
+		var data = file.get_buffer(file.get_length())
+
+		var key := _encryption_password_quantized.to_utf8_buffer()
+		var iv := data.slice(0, IV_SIZE)
+		var encrypted := data.slice(IV_SIZE)
+
+		aes.start(AESContext.MODE_CBC_DECRYPT, key, iv)
+		var decrypted := aes.update(encrypted)
+		aes.finish()
+
+		return decrypted.get_string_from_utf8()
