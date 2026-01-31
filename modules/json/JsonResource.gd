@@ -1,4 +1,4 @@
-## A resource which can serialize data to, and deserialize data from, a JSON file. Useful for any kind of save data.
+## A resource which can serialize data to, and deserialize data from, a JSON file. Useful for any kind of save data. This does NOT provide any access to available save files on the system. Typical usage includes prompting for a path using [FileDialog] and then either saving or loading to a new [JsonResource] instance.
 class_name JsonResource extends Resource
 
 #region Statics
@@ -158,11 +158,8 @@ static func deserialize_json(json: Variant, context: Object = null) -> Variant:
 
 signal modified
 
-## If set, this resource will be encrypted when saved.
-@export var _encryption_password : String
-var _encryption_password_quantized : String :
-	get: return _encryption_password # TODO: ensure it's the same size as KEY_SIZE
 
+## The path to save to. If left blank, a random path located in `user://` will be assigned.
 @export_storage var _save_path : String
 func generate_save_path(folder := "user://", name := str(randi())) -> String:
 	var result := ""
@@ -172,27 +169,47 @@ func generate_save_path(folder := "user://", name := str(randi())) -> String:
 		if not FileAccess.file_exists(result): break
 		_name = "%s_%s" % [name, str(randi())]
 	return result
-var file_exists : bool :
-	get: return FileAccess.file_exists(_save_path)
-
-@export_storage var time_created : int
-@export_storage var time_modified : int
-
 
 var path_ext : String :
 	get: return _get_path_ext()
 func _get_path_ext() -> String:
 	return ".json" if _encryption_password.is_empty() else ".dat"
 
+var save_file_exists : bool :
+	get: return FileAccess.file_exists(_save_path)
 
-var aes := AESContext.new()
-var crypto := Crypto.new()
+
+var _aes : AESContext
+var _crypto : Crypto
+var __encryption_password : String
+## If set, this resource will be encrypted when saved.
+@export var _encryption_password : String :
+	get: return __encryption_password
+	set(value):
+		__encryption_password = value
+
+		if __encryption_password.is_empty(): return
+
+		_aes = AESContext.new()
+		_crypto = Crypto.new()
+
+var _encryption_password_quantized : String :
+	get: return _encryption_password # TODO: ensure it's the same size as KEY_SIZE
+
+
+@export_storage var time_created : int
+@export_storage var time_modified : int
 
 
 func _init(__save_path__: String = generate_save_path()) -> void:
 	_save_path = __save_path__
 	time_created = NOW
 	time_modified = time_created
+
+	# if FileAccess.file_exists(save_path):
+	# 	load_from_file()
+	# else:
+	# 	save_to_file()
 
 
 func json_export() -> Dictionary:
@@ -218,7 +235,7 @@ func _json_import(json: Dictionary) -> void:
 
 
 func shell_open() -> void:
-	if not file_exists: return
+	if not save_file_exists: return
 	OS.shell_open(ProjectSettings.globalize_path(_save_path))
 func shell_open_location() -> void:
 	OS.shell_open(Snotbane.get_parent_folder(ProjectSettings.globalize_path(_save_path)))
@@ -240,12 +257,12 @@ func _save_to_file(file: FileAccess, json: String) -> void:
 		json += " ".repeat(KEY_SIZE - (json.length() % KEY_SIZE))
 
 		var key := _encryption_password_quantized.to_utf8_buffer()
-		var iv := crypto.generate_random_bytes(IV_SIZE)
+		var iv := _crypto.generate_random_bytes(IV_SIZE)
 		var decrypted := json.to_utf8_buffer()
 
-		aes.start(AESContext.MODE_CBC_ENCRYPT, key, iv)
-		var encrypted := aes.update(decrypted)
-		aes.finish()
+		_aes.start(AESContext.MODE_CBC_ENCRYPT, key, iv)
+		var encrypted := _aes.update(decrypted)
+		_aes.finish()
 
 		var result := PackedByteArray()
 		result.append_array(iv)
@@ -256,7 +273,7 @@ func _save_to_file(file: FileAccess, json: String) -> void:
 
 func load_from_file(path: String = _save_path) -> void:
 	_save_path = path
-	assert(file_exists, "Cannot load from file, file does not exist: %s" % _save_path)
+	assert(save_file_exists, "Cannot load from file, file does not exist: %s" % _save_path)
 
 	var file := FileAccess.open(path, FileAccess.READ)
 	var json_string = _load_from_file(file)
@@ -275,8 +292,8 @@ func _load_from_file(file: FileAccess) -> String:
 		var iv := data.slice(0, IV_SIZE)
 		var encrypted := data.slice(IV_SIZE)
 
-		aes.start(AESContext.MODE_CBC_DECRYPT, key, iv)
-		var decrypted := aes.update(encrypted)
-		aes.finish()
+		_aes.start(AESContext.MODE_CBC_DECRYPT, key, iv)
+		var decrypted := _aes.update(encrypted)
+		_aes.finish()
 
 		return decrypted.get_string_from_utf8()
