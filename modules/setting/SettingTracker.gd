@@ -5,7 +5,7 @@ class_name SettingTracker extends Node
 const STORAGE_DIR := "user://settings"
 
 
-static var storage_registry: Dictionary[String, ConfigFile]
+static var storage_registry: Dictionary
 
 
 static func _static_init() -> void:
@@ -31,28 +31,16 @@ enum {
 @export var storage_name : String = "default"
 
 var storage_path : String :
-	get: return STORAGE_DIR.path_join(storage_name + ".cfg")
+	get: return STORAGE_DIR.path_join(storage_name + ".json")
 
-var storage_file : ConfigFile :
+var storage_file : JsonResource :
 	get:
 		if not storage_registry.has(storage_path):
-			storage_registry[storage_path] = ConfigFile.new()
-			var err := storage_registry[storage_path].load(storage_path)
-			match err:
-				OK:
-					pass
-
-				ERR_FILE_NOT_FOUND:
-					storage_file.save(storage_path)
-
-				_:
-					printerr("Couldn't load settings config file '%s': error code %s" % [storage_path, err])
+			var res := JsonResource.new(storage_path)
+			storage_registry[storage_path] = res
 
 		return storage_registry[storage_path]
 
-
-## The section in [member storage_file] to place this in.
-@export var section : String
 
 ## The key in the [member storage_file]'s [member section] to store the value to.
 @export var key : String
@@ -112,7 +100,8 @@ func _ready() -> void:
 		ON_FOCUS_EXITED:
 			parent.focus_exited.connect(commit)
 
-	storage_file.load(storage_path)
+	storage_file.load_from_file()
+	print("storage_file.data : %s" % [ storage_file.data ])
 	retrieve()
 
 	parent.visibility_changed.connect(_parent_visibility_changed)
@@ -141,15 +130,15 @@ func _parent_value_changed() -> void:
 
 ## Retrieves the value from the config, provided that it is loaded and up to date.
 func retrieve() -> void:
-	if not storage_file.has_section_key(section, key): return
+	if not storage_file.data.has(key): return
 
-	value = storage_file.get_value(section, key)
+	value = storage_file.data[key]
 
 
 ## Sets the value to the config and saves it.
 func commit() -> void:
-	storage_file.set_value(section, key, value)
-	storage_file.save(storage_path)
+	storage_file.data[key] = value
+	storage_file.save_to_file()
 
 
 ## Resets the value to the default value.

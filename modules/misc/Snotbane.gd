@@ -78,10 +78,10 @@ static func create_one_shot_audio(parent: Node, stream: AudioStream, from_positi
 	return result
 
 
-static func is_node_of_type(node: Node, type: String) -> bool:
-	if node.get_class() == type: return true
+static func is_object_of_type(obj: Object, type: String) -> bool:
+	if obj.get_class() == type: return true
 
-	var script : Script = node.get_script()
+	var script : Script = obj.get_script()
 	while script != null:
 		if script.get_global_name() == type: return true
 		script = script.get_base_script()
@@ -92,20 +92,20 @@ static func is_node_of_type(node: Node, type: String) -> bool:
 static func find_ancestor_of_type(node: Node, type: String) -> Node:
 	node = node.get_parent()
 	while node != null:
-		if is_node_of_type(node, type): return node
+		if is_object_of_type(node, type): return node
 		node = node.get_parent()
 	return null
 
 ## Searches down the child hierarchy until it finds a [Node] whose class or script matches the specified [type].
 static func find_child_of_type(node: Node, type: String, include_internal: bool = false) -> Node:
 	for child in node.get_children(include_internal):
-		if is_node_of_type(child, type): return child
+		if is_object_of_type(child, type): return child
 	return null
 
 ## Searches down the child hierarchy until it finds a [Node] whose class or script matches the specified [type].
 static func find_descendant_of_type(node: Node, type: String, include_internal: bool = false) -> Node:
 	for child in node.get_children(include_internal):
-		if is_node_of_type(child, type): return child
+		if is_object_of_type(child, type): return child
 
 		var grandchild := find_descendant_of_type(child, type, include_internal)
 		if grandchild == null: continue
@@ -117,7 +117,7 @@ static func find_descendant_of_type(node: Node, type: String, include_internal: 
 static func find_sibling_of_type(node: Node, type: String, include_internal: bool = false, allow_self: bool = false) -> Node:
 	for child in node.get_parent().get_children(include_internal):
 		if child == node and not allow_self: continue
-		if is_node_of_type(child, type):
+		if is_object_of_type(child, type):
 			return child
 	return null
 

@@ -60,7 +60,7 @@ static func serialize_json(target: Variant) -> Dictionary:
 		TYPE_DICTIONARY:
 			json[&"value"] = {}
 			for k in target.keys():
-				json[&"value"][serialize_json(k)] = serialize_json(target[k])
+				json[&"value"][k] = serialize_json(target[k])
 
 		TYPE_ARRAY:
 			json[&"value"] = []
@@ -90,16 +90,15 @@ static func serialize_json(target: Variant) -> Dictionary:
 	return json
 
 ## Converts a JSON dictionary created using [member serialize_json()]. Objects and Callables may not always be deserialized as expected. Currently, it is assumed that Objects found in [param json] do not refer to any existing object but instead will create a new object to be populated with more nested data. In other words, do NOT use
-static func deserialize_json(json: Variant, context: Object = null) -> Variant:
+static func deserialize_json(json: Variant) -> Variant:
 	if json == null: return null
 
+	## For some reason, this block doesn't work when plugged into the match statement????
+	# if json[&"type"] == TYPE_OBJECT:
+	# 	if ClassDB.is_parent_class(json[&"class"], "Resource"):
+	# 		return load(json[&"value"])
+
 	match json[&"type"]:
-		TYPE_OBJECT when context.has_method(&"_json_import"):
-			context._json_import(json[&"value"])
-
-		TYPE_OBJECT when json[&"class"] == "Resource":
-			return load(json[&"value"])
-
 		TYPE_OBJECT:
 			return null
 		# TYPE_OBJECT:
@@ -119,7 +118,7 @@ static func deserialize_json(json: Variant, context: Object = null) -> Variant:
 		TYPE_DICTIONARY:
 			var result : Dictionary = {}
 			for k in json[&"value"].keys():
-				result[deserialize_json(k)] = deserialize_json(json[&"value"][k])
+				result[k] = deserialize_json(json[&"value"][k])
 			return result
 
 		TYPE_ARRAY:
@@ -159,21 +158,16 @@ static func deserialize_json(json: Variant, context: Object = null) -> Variant:
 signal modified
 
 
-## The path to save to. If left blank, a random path located in `user://` will be assigned.
-@export_storage var _save_path : String
-func generate_save_path(folder := "user://", name := str(randi())) -> String:
+## The path to save to. Make sure extension is included. If left blank, a random path located in `user://` will be assigned.
+@export var _save_path : String
+func generate_save_path(name := str(randi())) -> String:
 	var result := ""
-	var _name := name
+	var actual_filename := name
 	while true:
-		result = "%s%s%s" % [folder, _name, path_ext]
+		result = "%s%s%s" % ["user://", actual_filename, ".json" if _encryption_password.is_empty() else ".dat"]
 		if not FileAccess.file_exists(result): break
-		_name = "%s_%s" % [name, str(randi())]
+		actual_filename = "%s_%s" % [name, str(randi())]
 	return result
-
-var path_ext : String :
-	get: return _get_path_ext()
-func _get_path_ext() -> String:
-	return ".json" if _encryption_password.is_empty() else ".dat"
 
 var save_file_exists : bool :
 	get: return FileAccess.file_exists(_save_path)
@@ -199,39 +193,43 @@ var _encryption_password_quantized : String :
 
 @export_storage var time_created : int
 @export_storage var time_modified : int
+@export_storage var data : Dictionary
 
 
-func _init(__save_path__: String = generate_save_path()) -> void:
+func _init(__save_path__: String = generate_save_path(), __encryption_password__: String = "") -> void:
 	_save_path = __save_path__
+	_encryption_password = __encryption_password__
 	time_created = NOW
 	time_modified = time_created
 
-	# if FileAccess.file_exists(save_path):
+	# if FileAccess.file_exists(_save_path):
 	# 	load_from_file()
-	# else:
-	# 	save_to_file()
+	if not FileAccess.file_exists(_save_path):
+		save_to_file()
 
 
 func json_export() -> Dictionary:
 	return serialize_json(self)
 func _json_export() -> Dictionary:
+	print("_save_path : %s" % [ _save_path ])
 	var json := {}
 	for prop in get_property_list():
-		match prop[&"name"][0]:
-			"_":
-				continue
+		if prop[&"name"][0] == "_" or not prop[&"usage"] & PROPERTY_USAGE_STORAGE: continue
 
-		match prop[&"usage"]:
-			PROPERTY_USAGE_STORAGE:
-				json[prop[&"name"]] = serialize_json(self.get(prop[&"name"]))
+		json[prop[&"name"]] = serialize_json(self.get(prop[&"name"]))
 	return json
 
 
 func json_import(json: Dictionary) -> void:
-	deserialize_json(json, self)
-func _json_import(json: Dictionary) -> void:
-	for k : StringName in json.keys():
-		self.set(k, deserialize_json(json[k]))
+	# print("Helloo????")
+	# if has_method(&"_json_import"):
+	# 	var this = self
+	# 	this._json_import(json)
+
+	# else:
+	for k : StringName in json[&"value"].keys():
+		print("k : %s" % [ k ])
+		self.set(k, deserialize_json(json[&"value"][k]))
 
 
 func shell_open() -> void:
@@ -276,9 +274,13 @@ func load_from_file(path: String = _save_path) -> void:
 	assert(save_file_exists, "Cannot load from file, file does not exist: %s" % _save_path)
 
 	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		var err := file.get_open_error()
+		assert(false, "File load failed in JsonResource. Error code: %s. Path: %s" % [ err, path ])
+
 	var json_string = _load_from_file(file)
 	var json = JSON.parse_string(json_string)
-	assert(json != null, "Couldn't parse string to json: %s" % json_string)
+	assert(json != null, "Couldn't parse string to json at path: %s" % path)
 
 	json_import(json)
 ## Loads the given file as stringified JSON text.
