@@ -1,6 +1,25 @@
 ## A resource which can serialize data to, and deserialize data from, a JSON file. Useful for any kind of save data.
 class_name JsonResource extends Resource
 
+#region Statics
+
+const SECONDS_IN_DAY := 86400
+const SECONDS_IN_HOUR := 3600
+const SECONDS_IN_MINUTE := 60
+
+const K_TIME_CREATED := &"time_created"
+const K_TIME_MODIFIED := &"time_modified"
+
+static var NOW : int :
+	get: return floori(Time.get_unix_time_from_system())
+
+## Adapted from:	https://github.com/godotengine/godot-proposals/issues/5515#issuecomment-1409971613
+static func get_local_datetime(unix_time: int) -> int:
+	return unix_time + Time.get_time_zone_from_system().bias * SECONDS_IN_MINUTE
+
+#endregion
+#region Serialization
+
 ## Converts a [Variant] into a JSON-compatible typed [Dictionary]. Currently, [Object]s can only be serialized if it has the method [member _export_json()].
 static func serialize_json(target: Variant) -> Dictionary:
 	var json := {
@@ -131,18 +150,91 @@ static func deserialize_json(json: Variant, context: Object = null) -> Variant:
 
 	return null
 
+#endregion
+
+
+signal modified
+
+@export_storage var _save_path : String
+func generate_save_path(folder := "user://", name := str(randi())) -> String:
+	var result := ""
+	var _name := name
+	while true:
+		result = "%s%s%s" % [folder, _name, path_ext]
+		if not FileAccess.file_exists(result): break
+		_name = "%s_%s" % [name, str(randi())]
+	return result
+var file_exists : bool :
+	get: return FileAccess.file_exists(_save_path)
+
+@export_storage var time_created : int
+@export_storage var time_modified : int
+
+
+var path_ext : String :
+	get: return _get_path_ext()
+func _get_path_ext() -> String:
+	return ".json"
+
+
+func _init(__save_path__: String = generate_save_path()) -> void:
+	_save_path = __save_path__
+	time_created = NOW
+	time_modified = time_created
+
 
 func json_export() -> Dictionary:
 	return serialize_json(self)
 func _json_export() -> Dictionary:
 	var json := {}
 	for prop in get_property_list():
+		match prop[&"name"][0]:
+			"_":
+				continue
+
 		match prop[&"usage"]:
 			PROPERTY_USAGE_STORAGE:
-				json[&"value"][prop[&"name"]] = serialize_json(self.get(prop[&"name"]))
+				json[prop[&"name"]] = serialize_json(self.get(prop[&"name"]))
 	return json
-
 
 
 func json_import(json: Dictionary) -> void:
 	deserialize_json(json, self)
+func _json_import(json: Dictionary) -> void:
+	for k : StringName in json.keys():
+		self.set(k, deserialize_json(json[k]))
+
+
+func shell_open() -> void:
+	if not file_exists: return
+	OS.shell_open(ProjectSettings.globalize_path(_save_path))
+func shell_open_location() -> void:
+	OS.shell_open(Snotbane.get_parent_folder(ProjectSettings.globalize_path(_save_path)))
+
+
+func save_to_file(path: String = _save_path) -> void:
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	assert(file != null, "Cannot save to file, file does not exist: %s" % path)
+
+	time_modified = NOW
+	var json := JSON.stringify(json_export(), "\t" if OS.is_debug_build() else "", OS.is_debug_build(), true)
+	_save_to_file(file, json)
+	modified.emit()
+## Saves the given stringified JSON text to the file.
+func _save_to_file(file: FileAccess, json: String) -> void:
+	file.store_string(json)
+
+
+func load_from_file(path: String = _save_path) -> void:
+	_save_path = path
+	assert(file_exists, "Cannot load from file, file does not exist: %s" % _save_path)
+
+	var file := FileAccess.open(path, FileAccess.READ)
+	var json_string = _load_from_file(file)
+	var json = JSON.parse_string(json_string)
+	assert(json != null, "Couldn't parse string to json: %s" % json_string)
+
+	json_import(json)
+## Loads the given file as stringified JSON text.
+func _load_from_file(file: FileAccess) -> String:
+	return file.get_as_text()

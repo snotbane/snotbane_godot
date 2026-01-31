@@ -51,6 +51,14 @@ const SETTING_INPUT_DEBUG_GRID_TOGGLE := SETTING_INPUT_PREFIX + INPUT_DEBUG_GRID
 
 #endregion
 
+#region FileAccess
+
+static func get_parent_folder(path: String, levels: int = 1) -> String:
+	if path.is_empty(): return String()
+	if levels <= 0: return path
+	return get_parent_folder(path.substr(0, path.rfind("/")), levels - 1)
+
+#endregion
 #region Nodes
 
 ## Creates an [AudioStreamPlayer] that destroys itself after playing one sound. The kind of player it creates depends on the parent node. 3D parent will be a [AudioStreamPlayer3D], 2D parent will be a [AudioStreamPlayer2D], anything else will be [AudioStreamPlayer].
