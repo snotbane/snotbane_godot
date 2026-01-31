@@ -13,13 +13,19 @@ var reset_button_container : Control
 var reset_button : Button
 var tracker : SettingTracker
 
+var default_tooltip_text : String
+
 func _init() -> void:
+	default_tooltip_text = tooltip_text
+
 	hbox_all = HBoxContainer.new()
 	hbox_all.set_anchors_preset(PRESET_FULL_RECT)
 	self.add_child(hbox_all)
 
 	panel_container = PanelContainer.new()
 	panel_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	panel_container.tooltip_text = tooltip_text
+	panel_container.tooltip_auto_translate_mode = tooltip_auto_translate_mode
 	hbox_all.add_child(panel_container)
 
 	hbox_setting = HBoxContainer.new()
@@ -68,7 +74,7 @@ func _ready() -> void:
 	set(value): label.text = value
 
 
-@export_category("Tracker")
+@export_group("Tracker", "tracker_")
 
 @export_enum("No Autosave", "On Hidden", "On Focus Exited", "On Value Changed") var tracker_autosave : int = SettingTracker.ON_VALUE_CHANGED :
 	get: return tracker.autosave
@@ -84,10 +90,10 @@ func _ready() -> void:
 	set(value): tracker.key = value
 
 
-@export_group("Reset Button")
+@export_group("Reset Button", "reset_button_")
 
 ## Preallocates space for a reset button. The button will always be visible in editor.
-@export var reset_enabled : bool = true :
+@export var reset_button_enabled : bool = true :
 	get: return reset_button_container.visible
 	set(value): reset_button_container.visible = value
 

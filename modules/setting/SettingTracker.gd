@@ -52,10 +52,16 @@ var _value_is_changing : bool
 var _value_prev : Variant
 var value : Variant :
 	get:
-		if parent is Range:
+		if parent is BaseButton:
+			return parent.button_pressed
+
+		elif parent is Range:
 			return parent.value
 
-		elif parent is LineEdit or parent is TextEdit:
+		elif parent is LineEdit:
+			return parent.text
+
+		elif parent is TextEdit:
 			return parent.text
 
 		else:
@@ -63,7 +69,10 @@ var value : Variant :
 
 	## Each method here should implicitly or explicitly invoke [member _parent_value_changed()].
 	set(new_value):
-		if parent is Range:
+		if parent is BaseButton:
+			parent.button_pressed = new_value
+
+		elif parent is Range:
 			parent.value = new_value
 
 		elif parent is LineEdit:
@@ -83,23 +92,31 @@ var parent : Control :
 	get: return get_parent()
 var parent_is_valid : bool :
 	get: return (
-			parent is LineEdit
+			parent is BaseButton
 		or	parent is Range
+		or	parent is LineEdit
+		or	parent is TextEdit
 	)
 
 
 func _ready() -> void:
 	assert(not key.is_empty(), "SettingTracker (%s) needs a setting key." % self)
-	assert(parent_is_valid, "SettingTracker (%s) must be the child of one of the following types: [ Button, Range, LineEdit, TextEdit ]" % self)
+	assert(parent_is_valid, "SettingTracker (%s) must be the child of one of the following types: [ ButtonBase, Range, LineEdit, TextEdit ]" % self)
 
 	_default_value = value
 	_value_prev = _default_value
 
-	if parent is Range:
+	if parent is BaseButton:
+		parent.toggled.connect(_parent_value_changed.unbind(1))
+
+	elif parent is Range:
 		parent.value_changed.connect(_parent_value_changed.unbind(1))
 
 	elif parent is LineEdit:
 		parent.text_changed.connect(_parent_value_changed.unbind(1))
+
+	elif parent is TextEdit:
+		parent.text_changed.connect(_parent_value_changed)
 
 	match autosave:
 		ON_FOCUS_EXITED:

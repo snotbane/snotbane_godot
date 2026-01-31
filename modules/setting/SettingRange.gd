@@ -6,7 +6,7 @@ var range : Range
 func _init() -> void:
 	super._init()
 
-	range = SpinBox.new()
+	range = HSlider.new()
 	range.custom_minimum_size.x = 100.0
 	range.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	range.step = 1.0
@@ -16,20 +16,28 @@ func _init() -> void:
 
 @export_enum("Spin Box", "Horizontal Slider") var input_type : int = 0 :
 	get:
-		if range is SpinBox: 	return 0
-		if range is Slider:		return 1
+		if range is HSlider:		return 0
+		if range is SpinBox: 	return 1
 		return -1
+
 	set(value):
 		if input_type == value: return
 
-		var new_range : Range = SpinBox.new() if value == 0 else HSlider.new()
+		var new_range : Range
+		match value:
+			0: new_range = HSlider.new()
+			1: new_range = SpinBox.new()
+			_: return
+
 		new_range.custom_minimum_size.x = range.custom_minimum_size.x
 		new_range.size_flags_vertical = range.size_flags_vertical
 		new_range.value = range.value
 		new_range.step = range.step
 		new_range.min_value = range.min_value
 		new_range.max_value = range.max_value
-		new_range.value_changed.connect(tracker._parent_value_changed.unbind(1))
+		if range.value_changed.is_connected(tracker._parent_value_changed):
+			new_range.value_changed.connect(tracker._parent_value_changed.unbind(1))
+
 		hbox_setting.add_child(new_range)
 
 		tracker.reparent(new_range)
