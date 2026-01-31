@@ -50,6 +50,7 @@ var storage_file : ConfigFile :
 
 		return storage_registry[storage_path]
 
+
 ## The section in [member storage_file] to place this in.
 @export var section : String
 

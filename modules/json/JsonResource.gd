@@ -1,0 +1,148 @@
+## A resource which can serialize data to, and deserialize data from, a JSON file. Useful for any kind of save data.
+class_name JsonResource extends Resource
+
+## Converts a [Variant] into a JSON-compatible typed [Dictionary]. Currently, [Object]s can only be serialized if it has the method [member _export_json()].
+static func serialize_json(target: Variant) -> Dictionary:
+	var json := {
+		&"type": typeof(target)
+	}
+
+	match json[&"type"]:
+		TYPE_OBJECT when target.has_method(&"_json_export"):
+			json[&"class"] = target.get_class()
+			json[&"value"] = target._json_export()
+
+		TYPE_OBJECT when target is Resource and not target.resource_path.is_empty():
+			json[&"class"] = target.get_class()
+			json[&"value"] = ResourceUID.id_to_text(ResourceLoader.get_resource_uid(target.resource_path))
+
+		TYPE_OBJECT:
+			json[&"class"] = target.get_class()
+			json[&"value"] = null
+			printerr("Currently, an object can only be serialized if it is a Resource with a valid resource_path, or if it implements _json_export().")
+		# TYPE_OBJECT:
+		# 	json[&"class"] = target.get_class()
+		# 	if target.get_script():
+		# 		json[&"script"] = target.get_script().get_global_name()
+		# 		json[&"script_uid"] = ResourceUID.id_to_text(ResourceLoader.get_resource_uid(target.get_script().resource_path))
+
+		# 	if target.has_method(&"_json_export"):
+		# 		json[&"value"] = target._json_export()
+		# 	else:
+		# 		json[&"value"] = {}
+		# 		for prop in target.get_property_list():
+		# 			match prop[&"usage"]:
+		# 				PROPERTY_USAGE_STORAGE:
+		# 					json[&"value"][prop[&"name"]] = serialize_json(target.get(prop[&"name"]))
+
+		TYPE_DICTIONARY:
+			json[&"value"] = {}
+			for k in target.keys():
+				json[&"value"][serialize_json(k)] = serialize_json(target[k])
+
+		TYPE_ARRAY:
+			json[&"value"] = []
+			json[&"value"].resize(target.size())
+			for i in target.size():
+				json[&"value"][i] = serialize_json(target[i])
+
+		TYPE_CALLABLE:
+			json[&"value"] = null
+		# TYPE_CALLABLE:
+		# 	var bound_arguments : Array = target.get_bound_arguments()
+		# 	json[&"value"] = {
+		# 		&"method": target.get_method(),
+		# 		&"unbinds": target.get_unbound_arguments_count(),
+		# 		&"binds": [],
+		# 	}
+		# 	json[&"value"][&"binds"].resize(bound_arguments.size())
+		# 	for i in bound_arguments.size():
+		# 		json[&"value"][&"binds"][i] = serialize_json(bound_arguments[i])
+
+		TYPE_COLOR:
+			json[&"value"] = target.to_html()
+
+		_:
+			json[&"value"] = target
+
+	return json
+
+## Converts a JSON dictionary created using [member serialize_json()]. Objects and Callables may not always be deserialized as expected. Currently, it is assumed that Objects found in [param json] do not refer to any existing object but instead will create a new object to be populated with more nested data. In other words, do NOT use
+static func deserialize_json(json: Variant, context: Object = null) -> Variant:
+	if json == null: return null
+
+	match json[&"type"]:
+		TYPE_OBJECT when context.has_method(&"_json_import"):
+			context._json_import(json[&"value"])
+
+		TYPE_OBJECT when json[&"class"] == "Resource":
+			return load(json[&"value"])
+
+		TYPE_OBJECT:
+			return null
+		# TYPE_OBJECT:
+		# 	var result : Object = context if context != null else ClassDB.instantiate(json[&"class"])
+		# 	if json.has(&"script_uid"):
+		# 		result.set_script(load(json[&"script_uid"]))
+		# 		assert(result.get_script() != null, "Attempted to deserialize an object, but couldn't set the script. Make sure that it has an _init() method with 0 *required* arguments.")
+
+		# 	if result.has_method(&"_json_import"):
+		# 		result._json_import(json[&"value"])
+		# 	else:
+		# 		for prop_name : StringName in json[&"value"].keys():
+		# 			result.set(prop_name, deserialize_json(json[&"value"][prop_name]))
+
+		# 	return result
+
+		TYPE_DICTIONARY:
+			var result : Dictionary = {}
+			for k in json[&"value"].keys():
+				result[deserialize_json(k)] = deserialize_json(json[&"value"][k])
+			return result
+
+		TYPE_ARRAY:
+			var result : Array = []
+			result.resize(json[&"value"].size())
+			for i in result.size():
+				result[i] = deserialize_json(json[&"value"][i])
+			return result
+
+		TYPE_CALLABLE:
+			return null
+		# TYPE_CALLABLE:
+		# 	var result := Callable.create(context, json[&"value"][&"method"])
+		# 	var binds : Array = []
+		# 	binds.resize(json[&"value"][&"binds"].size())
+		# 	for i in binds.size():
+		# 		binds[i] = deserialize_json(json[&"value"][&"binds"][i])
+		# 	return result.bindv(binds).unbind(json[&"value"][&"unbinds"])
+
+		TYPE_COLOR:
+			return Color.html(json[&"value"])
+
+		TYPE_FLOAT:
+			return float(json[&"value"])
+
+		TYPE_INT:
+			return int(json[&"value"])
+
+		_:
+			return json[&"value"]
+
+	return null
+
+
+func json_export() -> Dictionary:
+	return serialize_json(self)
+func _json_export() -> Dictionary:
+	var json := {}
+	for prop in get_property_list():
+		match prop[&"usage"]:
+			PROPERTY_USAGE_STORAGE:
+				json[&"value"][prop[&"name"]] = serialize_json(self.get(prop[&"name"]))
+	return json
+
+
+
+func json_import(json: Dictionary) -> void:
+	deserialize_json(json, self)
