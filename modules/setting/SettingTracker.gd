@@ -11,7 +11,10 @@ static var storage_registry: Dictionary
 static func _static_init() -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(STORAGE_DIR))
 
+## Emitted whenever the value is changed.
+signal value_changed(new_value: Variant)
 
+## Emitted whenever the value becomes different from (or the same as) the default value.
 signal override_changed(is_overridden: bool)
 
 
@@ -52,15 +55,14 @@ var value : Variant :
 		if parent is Range:
 			return parent.value
 
-		elif parent is LineEdit:
+		elif parent is LineEdit or parent is TextEdit:
 			return parent.text
 
 		else:
 			return null
 
+	## Each method here should implicitly or explicitly invoke [member _parent_value_changed()].
 	set(new_value):
-		if value == new_value: return
-
 		if parent is Range:
 			parent.value = new_value
 
@@ -68,13 +70,17 @@ var value : Variant :
 			parent.text = new_value
 			_parent_value_changed()
 
+		elif parent is TextEdit:
+			parent.text = new_value
+
 
 var _default_value : Variant
 var value_is_default : bool :
 	get: return value == _default_value
 
 
-@onready var parent : Control = get_parent()
+var parent : Control :
+	get: return get_parent()
 var parent_is_valid : bool :
 	get: return (
 			parent is LineEdit
@@ -84,13 +90,13 @@ var parent_is_valid : bool :
 
 func _ready() -> void:
 	assert(not key.is_empty(), "SettingTracker (%s) needs a setting key." % self)
-	assert(parent_is_valid, "SettingTracker (%s) must be the child of one of the following types: [ LineEdit ]" % self)
+	assert(parent_is_valid, "SettingTracker (%s) must be the child of one of the following types: [ Button, Range, LineEdit, TextEdit ]" % self)
 
 	_default_value = value
 	_value_prev = _default_value
 
 	if parent is Range:
-		parent.value_changed.connect(_parent_value_changed)
+		parent.value_changed.connect(_parent_value_changed.unbind(1))
 
 	elif parent is LineEdit:
 		parent.text_changed.connect(_parent_value_changed.unbind(1))
@@ -99,7 +105,7 @@ func _ready() -> void:
 		ON_FOCUS_EXITED:
 			parent.focus_exited.connect(commit)
 
-	storage_file.load_from_file()
+	storage_file.load()
 	retrieve()
 
 	parent.visibility_changed.connect(_parent_visibility_changed)
@@ -113,6 +119,12 @@ func _parent_visibility_changed() -> void:
 
 
 func _parent_value_changed() -> void:
+	if value == _value_prev: return
+
+	match autosave:
+		ON_VALUE_CHANGED:
+			commit()
+
 	if _value_prev == _default_value and value != _default_value:
 		override_changed.emit(true)
 
@@ -121,10 +133,7 @@ func _parent_value_changed() -> void:
 
 	_value_prev = value
 
-	match autosave:
-		ON_VALUE_CHANGED:
-			commit()
-
+	value_changed.emit(_value_prev)
 
 ## Retrieves the value from the config, provided that it is loaded and up to date.
 func retrieve() -> void:
@@ -136,7 +145,7 @@ func retrieve() -> void:
 ## Sets the value to the config and saves it.
 func commit() -> void:
 	storage_file.data[key] = value
-	storage_file.save_to_file()
+	storage_file.save()
 
 
 ## Resets the value to the default value.

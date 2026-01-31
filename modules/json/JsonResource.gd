@@ -238,7 +238,6 @@ func json_import(json: Dictionary) -> void:
 		keys.sort_custom(_sort_import_keys)
 
 		for k : StringName in keys:
-			print(k)
 			self.set(k, deserialize_json(json[&"value"][k]))
 
 
