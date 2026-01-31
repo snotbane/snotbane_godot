@@ -93,12 +93,10 @@ static func serialize_json(target: Variant) -> Dictionary:
 static func deserialize_json(json: Variant) -> Variant:
 	if json == null: return null
 
-	## For some reason, this block doesn't work when plugged into the match statement????
-	# if json[&"type"] == TYPE_OBJECT:
-	# 	if ClassDB.is_parent_class(json[&"class"], "Resource"):
-	# 		return load(json[&"value"])
+	match int(json[&"type"]):
+		TYPE_OBJECT when ClassDB.is_parent_class(json[&"class"], "Resource"):
+			return load(json[&"value"])
 
-	match json[&"type"]:
 		TYPE_OBJECT:
 			return null
 		# TYPE_OBJECT:
@@ -118,6 +116,7 @@ static func deserialize_json(json: Variant) -> Variant:
 		TYPE_DICTIONARY:
 			var result : Dictionary = {}
 			for k in json[&"value"].keys():
+				var value = json[&"value"][k]
 				result[k] = deserialize_json(json[&"value"][k])
 			return result
 
@@ -196,40 +195,51 @@ var _encryption_password_quantized : String :
 @export_storage var data : Dictionary
 
 
-func _init(__save_path__: String = generate_save_path(), __encryption_password__: String = "") -> void:
+var import_order : PackedStringArray
+func _sort_import_keys(a: StringName, b: StringName) -> bool:
+	var ai := import_order.find(a)
+	if ai == -1:	return false
+
+	var bi := import_order.find(b)
+	if bi == -1:	return true
+
+	return ai < bi
+
+
+func _init(__save_path__: String = generate_save_path()) -> void:
 	_save_path = __save_path__
-	_encryption_password = __encryption_password__
 	time_created = NOW
 	time_modified = time_created
-
-	# if FileAccess.file_exists(_save_path):
-	# 	load_from_file()
-	if not FileAccess.file_exists(_save_path):
-		save_to_file()
+	import_order = [ &"script", &"resource_local_to_scene", &"resource_name", &"time_created", &"time_modified", &"data" ]
 
 
 func json_export() -> Dictionary:
 	return serialize_json(self)
 func _json_export() -> Dictionary:
-	print("_save_path : %s" % [ _save_path ])
 	var json := {}
 	for prop in get_property_list():
-		if prop[&"name"][0] == "_" or not prop[&"usage"] & PROPERTY_USAGE_STORAGE: continue
+		if (
+				prop[&"name"][0] == "_"
+			or	not prop[&"usage"] & PROPERTY_USAGE_STORAGE
+		):
+			continue
 
 		json[prop[&"name"]] = serialize_json(self.get(prop[&"name"]))
 	return json
 
 
 func json_import(json: Dictionary) -> void:
-	# print("Helloo????")
-	# if has_method(&"_json_import"):
-	# 	var this = self
-	# 	this._json_import(json)
+	if has_method(&"_json_import"):
+		var this = self
+		this._json_import(json)
 
-	# else:
-	for k : StringName in json[&"value"].keys():
-		print("k : %s" % [ k ])
-		self.set(k, deserialize_json(json[&"value"][k]))
+	else:
+		var keys : Array = json[&"value"].keys()
+		keys.sort_custom(_sort_import_keys)
+
+		for k : StringName in keys:
+			print(k)
+			self.set(k, deserialize_json(json[&"value"][k]))
 
 
 func shell_open() -> void:
@@ -239,16 +249,16 @@ func shell_open_location() -> void:
 	OS.shell_open(Snotbane.get_parent_folder(ProjectSettings.globalize_path(_save_path)))
 
 
-func save_to_file(path: String = _save_path) -> void:
+func save(path: String = _save_path) -> void:
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	assert(file != null, "Cannot save to file, file does not exist: %s" % path)
 
 	time_modified = NOW
 	var json := JSON.stringify(json_export(), "\t" if OS.is_debug_build() else "", OS.is_debug_build(), true)
-	_save_to_file(file, json)
+	_save(file, json)
 	modified.emit()
 ## Saves the given stringified JSON text to the file.
-func _save_to_file(file: FileAccess, json: String) -> void:
+func _save(file: FileAccess, json: String) -> void:
 	if _encryption_password.is_empty():
 		file.store_string(json)
 	else:
@@ -269,7 +279,7 @@ func _save_to_file(file: FileAccess, json: String) -> void:
 		file.store_buffer(result)
 
 
-func load_from_file(path: String = _save_path) -> void:
+func load(path: String = _save_path) -> void:
 	_save_path = path
 	assert(save_file_exists, "Cannot load from file, file does not exist: %s" % _save_path)
 
@@ -278,13 +288,13 @@ func load_from_file(path: String = _save_path) -> void:
 		var err := file.get_open_error()
 		assert(false, "File load failed in JsonResource. Error code: %s. Path: %s" % [ err, path ])
 
-	var json_string = _load_from_file(file)
+	var json_string = _load(file)
 	var json = JSON.parse_string(json_string)
 	assert(json != null, "Couldn't parse string to json at path: %s" % path)
 
 	json_import(json)
 ## Loads the given file as stringified JSON text.
-func _load_from_file(file: FileAccess) -> String:
+func _load(file: FileAccess) -> String:
 	if _encryption_password.is_empty():
 		return file.get_as_text()
 	else:

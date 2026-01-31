@@ -36,8 +36,7 @@ var storage_path : String :
 var storage_file : JsonResource :
 	get:
 		if not storage_registry.has(storage_path):
-			var res := JsonResource.new(storage_path)
-			storage_registry[storage_path] = res
+			storage_registry[storage_path] = JsonResource.new(storage_path)
 
 		return storage_registry[storage_path]
 
@@ -101,7 +100,6 @@ func _ready() -> void:
 			parent.focus_exited.connect(commit)
 
 	storage_file.load_from_file()
-	print("storage_file.data : %s" % [ storage_file.data ])
 	retrieve()
 
 	parent.visibility_changed.connect(_parent_visibility_changed)
