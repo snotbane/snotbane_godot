@@ -10,7 +10,7 @@ func _init() -> void:
 	range.custom_minimum_size.x = 100.0
 	range.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	range.step = 1.0
-	hbox_setting.add_child(range)
+	hbox_handle.add_child(range)
 
 	range.add_child(tracker)
 
@@ -38,7 +38,7 @@ func _init() -> void:
 		if range.value_changed.is_connected(tracker._parent_value_changed):
 			new_range.value_changed.connect(tracker._parent_value_changed.unbind(1))
 
-		hbox_setting.add_child(new_range)
+		hbox_handle.add_child(new_range)
 		tracker.reparent(new_range)
 		range.queue_free()
 		range = new_range

@@ -10,7 +10,7 @@ func _init() -> void:
 	option.custom_minimum_size.x = 100.0
 	option.selected = 0
 	option.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	hbox_setting.add_child(option)
+	hbox_handle.add_child(option)
 
 	option.add_child(tracker)
 
@@ -36,6 +36,7 @@ func _init() -> void:
 		for i in value.size():
 			option.set_item_text(i, value[i])
 			option.set_item_id(i, i)
+
 
 @export var selected : int :
 	get: return option.selected

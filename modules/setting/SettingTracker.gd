@@ -55,6 +55,9 @@ var value : Variant :
 		if parent is OptionButton:
 			return parent.selected
 
+		elif parent is ColorPickerButton:
+			return parent.color
+
 		elif parent is BaseButton:
 			return parent.button_pressed
 
@@ -74,6 +77,10 @@ var value : Variant :
 	set(new_value):
 		if parent is OptionButton:
 			parent.select(new_value)
+			_parent_value_changed()
+
+		elif parent is ColorPickerButton:
+			parent.color = new_value
 			_parent_value_changed()
 
 		elif parent is BaseButton:
@@ -115,6 +122,9 @@ func _ready() -> void:
 
 	if parent is OptionButton:
 		parent.item_selected.connect(_parent_value_changed.unbind(1))
+
+	elif parent is ColorPickerButton:
+		parent.color_changed.connect(_parent_value_changed.unbind(1))
 
 	elif parent is BaseButton:
 		parent.toggled.connect(_parent_value_changed.unbind(1))

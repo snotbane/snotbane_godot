@@ -23,7 +23,7 @@ func _init() -> void:
 	hbox_input = HBoxContainer.new()
 	hbox_input.custom_minimum_size.x = 100.0
 	hbox_input.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	hbox_setting.add_child(hbox_input)
+	hbox_handle.add_child(hbox_input)
 
 	input = LineEdit.new()
 	input.size_flags_horizontal = Control.SIZE_EXPAND_FILL

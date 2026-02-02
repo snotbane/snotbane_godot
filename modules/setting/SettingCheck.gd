@@ -8,7 +8,7 @@ func _init() -> void:
 
 	button = CheckBox.new()
 	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	hbox_setting.add_child(button)
+	hbox_handle.add_child(button)
 
 	button.add_child(tracker)
 
@@ -33,7 +33,7 @@ func _init() -> void:
 		if button.toggled.is_connected(tracker._parent_value_changed):
 			new_button.toggled.connect(tracker._parent_value_changed.unbind(1))
 
-		hbox_setting.add_child(new_button)
+		hbox_handle.add_child(new_button)
 		tracker.reparent(new_button)
 		button.queue_free()
 		button = new_button

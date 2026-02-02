@@ -7,7 +7,7 @@ signal value_changed(new_value: Variant)
 
 var hbox_all : HBoxContainer
 var panel_container : PanelContainer
-var hbox_setting : HBoxContainer
+var hbox_handle : HBoxContainer
 var label : Label
 var space : Control
 
@@ -30,19 +30,19 @@ func _init() -> void:
 	panel_container.tooltip_auto_translate_mode = tooltip_auto_translate_mode
 	hbox_all.add_child(panel_container)
 
-	hbox_setting = HBoxContainer.new()
-	panel_container.add_child(hbox_setting)
+	hbox_handle = HBoxContainer.new()
+	panel_container.add_child(hbox_handle)
 
 	label = Label.new()
 	label.name = &"label"
 	label.text = "Setting"
-	hbox_setting.add_child(label)
+	hbox_handle.add_child(label)
 
 	space = Control.new()
 	space.name = &"space"
 	space.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	space.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hbox_setting.add_child(space)
+	hbox_handle.add_child(space)
 
 	reset_button_container = Control.new()
 	# reset_button_container.custom_minimum_size
