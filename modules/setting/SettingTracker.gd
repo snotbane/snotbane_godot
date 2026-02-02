@@ -52,7 +52,10 @@ var _value_is_changing : bool
 var _value_prev : Variant
 var value : Variant :
 	get:
-		if parent is BaseButton:
+		if parent is OptionButton:
+			return parent.selected
+
+		elif parent is BaseButton:
 			return parent.button_pressed
 
 		elif parent is Range:
@@ -69,7 +72,11 @@ var value : Variant :
 
 	## Each method here should implicitly or explicitly invoke [member _parent_value_changed()].
 	set(new_value):
-		if parent is BaseButton:
+		if parent is OptionButton:
+			parent.select(new_value)
+			_parent_value_changed()
+
+		elif parent is BaseButton:
 			parent.button_pressed = new_value
 
 		elif parent is Range:
@@ -106,7 +113,10 @@ func _ready() -> void:
 	_default_value = value
 	_value_prev = _default_value
 
-	if parent is BaseButton:
+	if parent is OptionButton:
+		parent.item_selected.connect(_parent_value_changed.unbind(1))
+
+	elif parent is BaseButton:
 		parent.toggled.connect(_parent_value_changed.unbind(1))
 
 	elif parent is Range:
@@ -157,7 +167,6 @@ func retrieve() -> void:
 	if not storage_file.data.has(key): return
 
 	value = storage_file.data[key]
-
 
 ## Sets the value to the config and saves it.
 func commit() -> void:
