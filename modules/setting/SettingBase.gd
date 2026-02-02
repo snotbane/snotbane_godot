@@ -3,7 +3,31 @@
 
 const RESET_ICON := preload("uid://cc4at53uoxehi")
 
+static var STYLEBOX_EMPTY : StyleBoxEmpty
+static var STYLEBOX_INVALID : StyleBoxFlat
+const STYLEBOX_MARGIN_LEFT : int = 6
+const STYLEBOX_MARGIN_RIGHT : int = 6
+const STYLEBOX_MARGIN_TOP : int = 2
+const STYLEBOX_MARGIN_BOTTOM : int = 2
+
+static func _static_init() -> void:
+	STYLEBOX_EMPTY = StyleBoxEmpty.new()
+	STYLEBOX_EMPTY.content_margin_left		= STYLEBOX_MARGIN_LEFT
+	STYLEBOX_EMPTY.content_margin_right		= STYLEBOX_MARGIN_RIGHT
+	STYLEBOX_EMPTY.content_margin_top		= STYLEBOX_MARGIN_TOP
+	STYLEBOX_EMPTY.content_margin_bottom	= STYLEBOX_MARGIN_BOTTOM
+
+	STYLEBOX_INVALID = StyleBoxFlat.new()
+	STYLEBOX_INVALID.bg_color = Color.INDIAN_RED
+	STYLEBOX_INVALID.content_margin_left	= STYLEBOX_MARGIN_LEFT
+	STYLEBOX_INVALID.content_margin_right	= STYLEBOX_MARGIN_RIGHT
+	STYLEBOX_INVALID.content_margin_top		= STYLEBOX_MARGIN_TOP
+	STYLEBOX_INVALID.content_margin_bottom	= STYLEBOX_MARGIN_BOTTOM
+
+
 signal value_changed(new_value: Variant)
+signal valid_changed(new_valid: bool)
+
 
 var hbox_all : HBoxContainer
 var panel_container : PanelContainer
@@ -11,11 +35,12 @@ var hbox_handle : HBoxContainer
 var label : Label
 var space : Control
 
+var tracker : SettingTracker
 var reset_button_container : Control
 var reset_button : Button
-var tracker : SettingTracker
 
 var default_tooltip_text : String
+
 
 func _init() -> void:
 	default_tooltip_text = tooltip_text
@@ -25,6 +50,7 @@ func _init() -> void:
 	self.add_child(hbox_all)
 
 	panel_container = PanelContainer.new()
+	panel_container.add_theme_stylebox_override(&"panel", STYLEBOX_EMPTY)
 	panel_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	panel_container.tooltip_text = tooltip_text
 	panel_container.tooltip_auto_translate_mode = tooltip_auto_translate_mode
@@ -62,6 +88,7 @@ func _init() -> void:
 	reset_button.pressed.connect(tracker.reset)
 	tracker.value_changed.connect(value_changed.emit)
 	tracker.override_changed.connect(reset_button.set_visible)
+	# value_changed.connect(validate.unbind(1))
 
 
 func _get_minimum_size() -> Vector2:
@@ -70,6 +97,8 @@ func _get_minimum_size() -> Vector2:
 
 func _ready() -> void:
 	reset_button_container.custom_minimum_size = reset_button.get_combined_minimum_size()
+
+	validate()
 
 
 @export var label_text : String = "Setting" :
@@ -92,6 +121,45 @@ func _ready() -> void:
 	get: return tracker.key
 	set(value): tracker.key = value
 
+@export_tool_button("Open Tracker File") var _open_tracker := func() -> void:
+	tracker.storage_file.shell_open()
+
+
+@export_group("Validation")
+
+var panel_normal : StyleBox :
+	get: return get_theme_stylebox(&"setting_panel_normal", &"SettingBase") if has_theme_stylebox(&"setting_panel_normal", &"SettingBase") else STYLEBOX_EMPTY
+
+var panel_invalid : StyleBox :
+	get: return get_theme_stylebox(&"setting_panel_invalid", &"SettingBase") if has_theme_stylebox(&"setting_panel_invalid", &"SettingBase") else STYLEBOX_INVALID
+
+
+var _validation_tooltip_text : String
+var validation_tooltip_text : String :
+	get: return _validation_tooltip_text
+	set(value):
+		var _is_valid_prev := is_valid
+
+		_validation_tooltip_text = value
+
+		if is_valid:
+			panel_container.tooltip_text = default_tooltip_text
+			panel_container.add_theme_stylebox_override(&"panel", panel_normal)
+		else:
+			panel_container.tooltip_text = _validation_tooltip_text
+			panel_container.add_theme_stylebox_override(&"panel", panel_invalid)
+
+		if is_valid != _is_valid_prev:
+			valid_changed.emit(is_valid)
+
+var is_valid : bool :
+	get: return _validation_tooltip_text.is_empty()
+
+
+func validate() -> void:
+	validation_tooltip_text = _validate()
+func _validate() -> String: return String()
+
 
 @export_group("Reset Button", "reset_button_")
 
@@ -109,6 +177,3 @@ func _ready() -> void:
 	set(value): reset_button.icon = value
 
 @export_group("")
-
-@export_tool_button("Open Tracker File") var _open_tracker := func() -> void:
-	tracker.storage_file.shell_open()

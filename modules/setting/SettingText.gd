@@ -18,7 +18,6 @@ func _init() -> void:
 	super._init()
 
 	_validation_method = VALIDATION_METHODS[StringValidation.NO_VALIDATION]
-	value_changed.connect(validate.unbind(1))
 
 	hbox_input = HBoxContainer.new()
 	hbox_input.custom_minimum_size.x = 100.0
@@ -48,6 +47,16 @@ func _init() -> void:
 	file_button.pressed.connect(file_button_pressed.emit)
 
 
+@export var text : String :
+	get: return input.text
+	set(value): input.text = value
+
+
+@export var placeholder_text : String :
+	get: return input.placeholder_text
+	set(value): input.placeholder_text = value
+
+
 var _input_type : int
 @export_enum("Single Line", "Multi Line", "Code") var input_type : int :
 	get: return _input_type
@@ -72,6 +81,11 @@ var _input_type : int
 		tracker.reparent(new_input)
 		input.queue_free()
 		input = new_input
+
+
+@export var handle_minimum_width : float = 100.0 :
+	get: return hbox_input.custom_minimum_size.x
+	set(value): hbox_input.custom_minimum_size.x = value
 
 
 var _validation_method : Callable
@@ -148,24 +162,7 @@ var VALIDATION_METHODS : Array[Callable] = [
 ]
 
 func _validate_custom() -> String: return "Unimplmented validation method."
-
-func validate() -> void:
-	var error : String = _validation_method.call()
-	panel_container.tooltip_text = default_tooltip_text if error.is_empty() else error
-
-
-@export var text : String :
-	get: return input.text
-	set(value): input.text = value
-
-@export var placeholder_text : String :
-	get: return input.placeholder_text
-	set(value): input.placeholder_text = value
-
-
-@export var handle_minimum_width : float = 100.0 :
-	get: return hbox_input.custom_minimum_size.x
-	set(value): hbox_input.custom_minimum_size.x = value
+func _validate() -> String: return _validation_method.call()
 
 
 @export_group("File Dialog", "file_dialog_")
@@ -237,9 +234,3 @@ func _prompt_file_path():
 			return file_dialog.current_path
 		_:
 			return null
-
-
-func _ready() -> void:
-	super._ready()
-
-	validate()

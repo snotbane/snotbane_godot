@@ -142,8 +142,9 @@ func _ready() -> void:
 		ON_FOCUS_EXITED:
 			parent.focus_exited.connect(commit)
 
-	storage_file.load()
-	retrieve()
+	if not OS.has_feature(&"editor_hint"):
+		storage_file.load()
+		retrieve()
 
 	parent.visibility_changed.connect(_parent_visibility_changed)
 
