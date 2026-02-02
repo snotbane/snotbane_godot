@@ -17,6 +17,9 @@ var file_dialog : FileDialog
 func _init() -> void:
 	super._init()
 
+	_validation_method = VALIDATION_METHODS[StringValidation.NO_VALIDATION]
+	value_changed.connect(validate.unbind(1))
+
 	hbox_input = HBoxContainer.new()
 	hbox_input.custom_minimum_size.x = 100.0
 	hbox_input.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -43,7 +46,6 @@ func _init() -> void:
 	input.add_child(tracker)
 
 	file_button.pressed.connect(file_button_pressed.emit)
-	value_changed.connect(validate.unbind(1))
 
 
 var _input_type : int
@@ -201,6 +203,10 @@ var _file_dialog_type : int
 @export var file_dialog_access := FileDialog.Access.ACCESS_USERDATA :
 	get: return file_dialog.access
 	set(value): file_dialog.access = value
+
+@export var file_dialog_filters : PackedStringArray :
+	get: return file_dialog.filters
+	set(value): file_dialog.filters = value
 
 
 func _button_open_path() -> void:
