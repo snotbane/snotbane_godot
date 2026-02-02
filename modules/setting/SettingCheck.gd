@@ -12,6 +12,7 @@ func _init() -> void:
 
 	button.add_child(tracker)
 
+
 @export_enum("Check Box", "Check Button") var button_type : int = 0 :
 	get:
 		if button is CheckBox:		return 0
@@ -33,9 +34,7 @@ func _init() -> void:
 			new_button.toggled.connect(tracker._parent_value_changed.unbind(1))
 
 		hbox_setting.add_child(new_button)
-
 		tracker.reparent(new_button)
-
 		button.queue_free()
 		button = new_button
 

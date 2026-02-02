@@ -3,6 +3,8 @@
 
 const RESET_ICON := preload("uid://cc4at53uoxehi")
 
+signal value_changed(new_value: Variant)
+
 var hbox_all : HBoxContainer
 var panel_container : PanelContainer
 var hbox_setting : HBoxContainer
@@ -58,6 +60,7 @@ func _init() -> void:
 	tracker.name = &"setting_tracker"
 
 	reset_button.pressed.connect(tracker.reset)
+	tracker.value_changed.connect(value_changed.emit)
 	tracker.override_changed.connect(reset_button.set_visible)
 
 

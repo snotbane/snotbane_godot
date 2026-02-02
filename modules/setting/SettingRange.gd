@@ -16,8 +16,8 @@ func _init() -> void:
 
 @export_enum("Spin Box", "Horizontal Slider") var input_type : int = 0 :
 	get:
-		if range is HSlider:		return 0
-		if range is SpinBox: 	return 1
+		if range is HSlider:	return 0
+		if range is SpinBox:	return 1
 		return -1
 
 	set(value):
@@ -39,9 +39,7 @@ func _init() -> void:
 			new_range.value_changed.connect(tracker._parent_value_changed.unbind(1))
 
 		hbox_setting.add_child(new_range)
-
 		tracker.reparent(new_range)
-
 		range.queue_free()
 		range = new_range
 
