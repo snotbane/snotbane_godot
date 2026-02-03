@@ -197,3 +197,6 @@ func _validate() -> String: return String()
 
 
 @export_group("")
+
+@export_tool_button("Manifest") var manifest_func := func() -> void:
+	Snotbane.manifest_node_children(self)

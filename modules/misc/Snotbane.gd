@@ -121,6 +121,15 @@ static func find_sibling_of_type(node: Node, type: String, include_internal: boo
 			return child
 	return null
 
+
+## For use in editor with an export_tool_button. Use this to make all of a node's children owned by the edited scene root.
+static func manifest_node_children(node: Node, manifested := true, recursive := true) -> void:
+	if not OS.has_feature(&"editor_hint"): return
+
+	for child in node.get_children():
+		child.owner = EditorInterface.get_edited_scene_root() if manifested else null
+		if recursive: manifest_node_children(child, manifested, true)
+
 #endregion
 #region Physics
 
