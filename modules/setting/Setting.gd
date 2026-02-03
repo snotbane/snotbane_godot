@@ -25,7 +25,11 @@ static func _static_init() -> void:
 	STYLEBOX_INVALID.content_margin_bottom	= STYLEBOX_MARGIN_BOTTOM
 
 
+## This signal emits when the input value changes for any reason. TODO.
+signal input_changed(new_value: Variant)
+## This signal emits when the input value is finished changing, e.g. submitted text or finished slider drag.
 signal value_changed(new_value: Variant)
+## This signal emits whenever this Setting changes from being valid to invalid, or invalid to valid (regardless of the reason).
 signal valid_changed(new_valid: bool)
 
 
@@ -93,7 +97,10 @@ func _init() -> void:
 
 
 func _get_minimum_size() -> Vector2:
-	return panel_container.get_minimum_size()
+	var result := panel_container.get_minimum_size()
+	if group and group.ensure_same_minimum_height: result.y = group.minimum_height
+	return result
+
 
 
 func _ready() -> void:
@@ -105,6 +112,17 @@ func _ready() -> void:
 @export var label_text : String = "Setting" :
 	get: return label.text
 	set(value): label.text = value
+
+
+var _group : SettingGroup
+@export var group : SettingGroup :
+	get: return _group
+	set(value):
+		if _group: _group.remove_user(self)
+
+		_group = value
+
+		if _group: _group.add_user(self)
 
 
 @export_group("Tracker", "tracker_")
