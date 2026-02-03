@@ -1,5 +1,5 @@
 
-@tool class_name SettingCheck extends SettingBase
+@tool class_name SettingCheck extends Setting
 
 var button : BaseButton
 

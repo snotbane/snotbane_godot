@@ -1,5 +1,5 @@
 
-@tool class_name SettingOption extends SettingBase
+@tool class_name SettingOption extends Setting
 
 var option : OptionButton
 

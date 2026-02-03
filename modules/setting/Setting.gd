@@ -1,5 +1,5 @@
 
-@tool class_name SettingBase extends Control
+@tool class_name Setting extends Control
 
 const RESET_ICON := preload("uid://cc4at53uoxehi")
 
@@ -85,10 +85,11 @@ func _init() -> void:
 	tracker = SettingTracker.new()
 	tracker.name = &"setting_tracker"
 
-	reset_button.pressed.connect(tracker.reset)
 	tracker.value_changed.connect(value_changed.emit)
-	tracker.override_changed.connect(reset_button.set_visible)
-	# value_changed.connect(validate.unbind(1))
+
+	if not OS.has_feature(&"editor_hint"):
+		tracker.override_changed.connect(reset_button.set_visible)
+		reset_button.pressed.connect(tracker.reset)
 
 
 func _get_minimum_size() -> Vector2:
@@ -121,17 +122,17 @@ func _ready() -> void:
 	get: return tracker.key
 	set(value): tracker.key = value
 
-@export_tool_button("Open Tracker File") var _open_tracker := func() -> void:
+@export_tool_button("Open Tracker File") var tracker_open_tool_button := func() -> void:
 	tracker.storage_file.shell_open()
 
 
 @export_group("Validation")
 
 var panel_normal : StyleBox :
-	get: return get_theme_stylebox(&"setting_panel_normal", &"SettingBase") if has_theme_stylebox(&"setting_panel_normal", &"SettingBase") else STYLEBOX_EMPTY
+	get: return get_theme_stylebox(&"setting_panel_normal", &"Setting") if has_theme_stylebox(&"setting_panel_normal", &"Setting") else STYLEBOX_EMPTY
 
 var panel_invalid : StyleBox :
-	get: return get_theme_stylebox(&"setting_panel_invalid", &"SettingBase") if has_theme_stylebox(&"setting_panel_invalid", &"SettingBase") else STYLEBOX_INVALID
+	get: return get_theme_stylebox(&"setting_panel_invalid", &"Setting") if has_theme_stylebox(&"setting_panel_invalid", &"Setting") else STYLEBOX_INVALID
 
 
 var _validation_tooltip_text : String
@@ -175,5 +176,6 @@ func _validate() -> String: return String()
 @export var reset_button_icon : Texture2D = RESET_ICON :
 	get: return reset_button.icon
 	set(value): reset_button.icon = value
+
 
 @export_group("")

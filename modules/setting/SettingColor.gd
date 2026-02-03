@@ -1,5 +1,5 @@
 
-@tool class_name SettingColor extends SettingBase
+@tool class_name SettingColor extends Setting
 
 var color_picker : ColorPickerButton
 

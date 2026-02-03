@@ -1,5 +1,5 @@
 
-@tool class_name SettingText extends SettingBase
+@tool class_name SettingText extends Setting
 
 const FILE_BUTTON_ICON := preload("uid://da04krtpviega")
 

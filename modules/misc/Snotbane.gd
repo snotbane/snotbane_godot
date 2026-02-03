@@ -1,5 +1,5 @@
 
-class_name Snotbane
+@tool class_name Snotbane
 
 #region Input Definitions
 
@@ -251,5 +251,13 @@ static func x_y(v: Vector2, y: float = 0.0) -> Vector3:
 	return Vector3(v.x, y, v.y)
 static func xy_(v: Vector2, z: float = 0.0) -> Vector3:
 	return Vector3(v.x, v.y, z)
+
+#endregion
+#region Strings
+
+static var REGEX_STRING_FORMAT_CHECKER := RegEx.create_from_string(r"(?<!%)%[0-9\.]*[sdifv]")
+
+static func get_format_count(s: String) -> int:
+	return REGEX_STRING_FORMAT_CHECKER.search_all(s).size()
 
 #endregion
