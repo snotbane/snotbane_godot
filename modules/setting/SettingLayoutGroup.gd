@@ -1,5 +1,5 @@
 
-@tool class_name SettingGroup extends Resource
+@tool class_name SettingLayoutGroup extends Resource
 
 ## If enabled, all Settings in this group are guaranteed to have the same minimum height, which is to be the largest of all in the group.
 var _ensure_same_minimum_height : bool = true
@@ -20,8 +20,12 @@ var minimum_height : float :
 		return result
 
 
+func _init() -> void:
+	resource_local_to_scene = true
+
+
 func add_user(user: Setting) -> void:
-	flush_null_users()
+	_flush_null_users()
 
 	if users.has(user): return
 
@@ -46,15 +50,16 @@ func update_users_minimum_size(ignore: Setting = null) -> void:
 		user.update_minimum_size()
 
 
-func flush_null_users() -> void:
+func _flush_null_users() -> void:
 	while users.has(null):
-		print("Erased null")
 		users.erase(null)
 
-	# var deleted : int = 0
-	# var size := users.size()
-	# for i in size:
-	# 	if users[i - deleted] != null: continue
-	# 	users.remove_at(i - deleted)
-	# 	deleted += 1
+	var to_remove = null
+	for user in users:
+		if user is Setting: continue
+		if to_remove == null: to_remove = []
+		to_remove.push_back(user)
+	if to_remove == null: return
 
+	for user in to_remove:
+		users.erase(user)

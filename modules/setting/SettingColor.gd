@@ -11,7 +11,7 @@ func _init() -> void:
 	color_picker.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	color_picker.edit_alpha = false
 	color_picker.edit_intensity = false
-	hbox_handle.add_child(color_picker)
+	hbox_panel.add_child(color_picker)
 
 	color_picker.add_child(tracker)
 

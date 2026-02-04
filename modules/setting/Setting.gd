@@ -35,7 +35,7 @@ signal valid_changed(new_valid: bool)
 
 var hbox_all : HBoxContainer
 var panel_container : PanelContainer
-var hbox_handle : HBoxContainer
+var hbox_panel : HBoxContainer
 var label : Label
 var space : Control
 
@@ -60,19 +60,19 @@ func _init() -> void:
 	panel_container.tooltip_auto_translate_mode = tooltip_auto_translate_mode
 	hbox_all.add_child(panel_container)
 
-	hbox_handle = HBoxContainer.new()
-	panel_container.add_child(hbox_handle)
+	hbox_panel = HBoxContainer.new()
+	panel_container.add_child(hbox_panel)
 
 	label = Label.new()
 	label.name = &"label"
 	label.text = "Setting"
-	hbox_handle.add_child(label)
+	hbox_panel.add_child(label)
 
 	space = Control.new()
 	space.name = &"space"
 	space.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	space.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hbox_handle.add_child(space)
+	hbox_panel.add_child(space)
 
 	reset_button_container = Control.new()
 	# reset_button_container.custom_minimum_size
@@ -98,7 +98,7 @@ func _init() -> void:
 
 func _get_minimum_size() -> Vector2:
 	var result := panel_container.get_minimum_size()
-	if group and group.ensure_same_minimum_height: result.y = group.minimum_height
+	if layout_group and layout_group.ensure_same_minimum_height: result.y = layout_group.minimum_height
 	return result
 
 
@@ -114,15 +114,15 @@ func _ready() -> void:
 	set(value): label.text = value
 
 
-var _group : SettingGroup
-@export var group : SettingGroup :
-	get: return _group
+var _layout_group : SettingLayoutGroup
+@export var layout_group : SettingLayoutGroup :
+	get: return _layout_group
 	set(value):
-		if _group: _group.remove_user(self)
+		if _layout_group: _layout_group.remove_user(self)
 
-		_group = value
+		_layout_group = value
 
-		if _group: _group.add_user(self)
+		if _layout_group: _layout_group.add_user(self)
 
 
 @export_group("Tracker", "tracker_")
@@ -194,9 +194,3 @@ func _validate() -> String: return String()
 @export var reset_button_icon : Texture2D = RESET_ICON :
 	get: return reset_button.icon
 	set(value): reset_button.icon = value
-
-
-@export_group("")
-
-@export_tool_button("Manifest") var manifest_func := func() -> void:
-	Snotbane.manifest_node_children(self)
