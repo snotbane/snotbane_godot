@@ -2,10 +2,11 @@
 @tool extends EditorPlugin
 
 func _enable_plugin() -> void:
-	ProjectSettings.set_setting(MouseModeUser.PROJECT_SETTING_HINT["name"], Input.MouseMode.MOUSE_MODE_VISIBLE)
-	ProjectSettings.add_property_info(MouseModeUser.PROJECT_SETTING_HINT)
-
-	ProjectSettings.save()
+	if not ProjectSettings.has_setting(MouseModeUser.PROJECT_SETTING_HINT[&"name"]):
+		ProjectSettings.set_setting(MouseModeUser.PROJECT_SETTING_HINT[&"name"], Input.MOUSE_MODE_VISIBLE)
+		ProjectSettings.add_property_info(MouseModeUser.PROJECT_SETTING_HINT)
+		ProjectSettings.set_initial_value(MouseModeUser.PROJECT_SETTING_HINT[&"name"], Input.MOUSE_MODE_VISIBLE)
+		ProjectSettings.save()
 
 	add_autoload_singleton(DebugGhostAutoload.AUTOLOAD_NAME, DebugGhostAutoload.AUTOLOAD_PATH)
 	add_autoload_singleton(TerminalAutoload.AUTOLOAD_NAME, TerminalAutoload.AUTOLOAD_PATH)
@@ -13,10 +14,6 @@ func _enable_plugin() -> void:
 	configure_input()
 
 func _disable_plugin() -> void:
-	ProjectSettings.set_setting(MouseModeUser.PROJECT_SETTING_HINT["name"], null)
-
-	ProjectSettings.save()
-
 	remove_autoload_singleton(DebugGhostAutoload.AUTOLOAD_NAME)
 	remove_autoload_singleton(TerminalAutoload.AUTOLOAD_NAME)
 
