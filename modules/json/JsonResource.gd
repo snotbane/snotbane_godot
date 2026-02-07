@@ -13,6 +13,18 @@ const K_TIME_MODIFIED := &"time_modified"
 const KEY_SIZE := 16
 const IV_SIZE := 16
 
+const IMPORT_ORDER : PackedStringArray = [ &"script", &"resource_local_to_scene", &"resource_name", &"time_created", &"time_modified", &"data" ]
+
+static func _sort_import_keys(a: StringName, b: StringName) -> bool:
+	var ai := IMPORT_ORDER.find(a)
+	if ai == -1:	return false
+
+	var bi := IMPORT_ORDER.find(b)
+	if bi == -1:	return true
+
+	return ai < bi
+
+
 static var NOW : int :
 	get: return floori(Time.get_unix_time_from_system())
 
@@ -24,49 +36,39 @@ static func get_local_datetime(unix_time: int) -> int:
 #region Serialization
 
 ## Converts a [Variant] into a JSON-compatible typed [Dictionary]. Currently, [Object]s can only be serialized if it has the method [member _export_json()].
-static func serialize_json(target: Variant) -> Dictionary:
+static func serialize(target: Variant) -> Dictionary:
 	var json := {
 		&"type": typeof(target)
 	}
 
 	match json[&"type"]:
-		TYPE_OBJECT when target.has_method(&"_json_export"):
-			json[&"class"] = target.get_class()
-			json[&"value"] = target._json_export()
-
-		TYPE_OBJECT when target is Resource and not target.resource_path.is_empty():
-			json[&"class"] = target.get_class()
-			json[&"value"] = ResourceUID.id_to_text(ResourceLoader.get_resource_uid(target.resource_path))
-
 		TYPE_OBJECT:
 			json[&"class"] = target.get_class()
-			json[&"value"] = null
-			printerr("Currently, an object can only be serialized if it is a Resource with a valid resource_path, or if it implements _json_export().")
-		# TYPE_OBJECT:
-		# 	json[&"class"] = target.get_class()
-		# 	if target.get_script():
-		# 		json[&"script"] = target.get_script().get_global_name()
-		# 		json[&"script_uid"] = ResourceUID.id_to_text(ResourceLoader.get_resource_uid(target.get_script().resource_path))
+			if target.get_script():
+				# json[&"script"] = target.get_script().get_global_name()
+				json[&"script"] = ResourceUID.id_to_text(ResourceLoader.get_resource_uid(target.get_script().resource_path))
 
-		# 	if target.has_method(&"_json_export"):
-		# 		json[&"value"] = target._json_export()
-		# 	else:
-		# 		json[&"value"] = {}
-		# 		for prop in target.get_property_list():
-		# 			match prop[&"usage"]:
-		# 				PROPERTY_USAGE_STORAGE:
-		# 					json[&"value"][prop[&"name"]] = serialize_json(target.get(prop[&"name"]))
+	match json[&"type"]:
+		TYPE_OBJECT when target.has_method(&"_json_export"):
+			json[&"value"] = target._json_export()
+
+		TYPE_OBJECT when target is Resource:
+			json[&"value"] = _serialize_resource(target) if target.resource_path.is_empty() else ResourceUID.id_to_text(ResourceLoader.get_resource_uid(target.resource_path))
+
+		TYPE_OBJECT:
+			json[&"value"] = null
+			printerr("Currently, an object can only be serialized if it implements _json_export(), or if it is a Resource.")
 
 		TYPE_DICTIONARY:
 			json[&"value"] = {}
 			for k in target.keys():
-				json[&"value"][k] = serialize_json(target[k])
+				json[&"value"][k] = serialize(target[k])
 
 		TYPE_ARRAY:
 			json[&"value"] = []
 			json[&"value"].resize(target.size())
 			for i in target.size():
-				json[&"value"][i] = serialize_json(target[i])
+				json[&"value"][i] = serialize(target[i])
 
 		TYPE_CALLABLE:
 			json[&"value"] = null
@@ -79,7 +81,7 @@ static func serialize_json(target: Variant) -> Dictionary:
 		# 	}
 		# 	json[&"value"][&"binds"].resize(bound_arguments.size())
 		# 	for i in bound_arguments.size():
-		# 		json[&"value"][&"binds"][i] = serialize_json(bound_arguments[i])
+		# 		json[&"value"][&"binds"][i] = serialize(bound_arguments[i])
 
 		TYPE_COLOR:
 			json[&"value"] = target.to_html()
@@ -88,14 +90,31 @@ static func serialize_json(target: Variant) -> Dictionary:
 			json[&"value"] = target
 
 	return json
+static func _serialize_resource(res: Resource) -> Dictionary:
+	if res.get_script():
+		print(res.get_script().get_global_name())
+	else:
+		print(res.get_class())
+	var json := {}
+	for prop in res.get_property_list():
+		if (
+				prop[&"name"][0] == "_"
+			or	not prop[&"usage"] & PROPERTY_USAGE_STORAGE
+		):
+			continue
 
-## Converts a JSON dictionary created using [member serialize_json()]. Objects and Callables may not always be deserialized as expected. Currently, it is assumed that Objects found in [param json] do not refer to any existing object but instead will create a new object to be populated with more nested data. In other words, do NOT use
-static func deserialize_json(json: Variant) -> Variant:
+		json[prop[&"name"]] = serialize(res.get(prop[&"name"]))
+	print(json)
+	return json
+
+
+## Converts a JSON dictionary created using [member serialize()]. Objects and Callables may not always be deserialized as expected. Currently, it is assumed that Objects found in [param json] do not refer to any existing object but instead will create a new object to be populated with more nested data. In other words, do NOT use
+static func deserialize(json: Variant) -> Variant:
 	if json == null: return null
 
 	match int(json[&"type"]):
 		TYPE_OBJECT when ClassDB.is_parent_class(json[&"class"], "Resource"):
-			return load(json[&"value"])
+			return _deserialize_resource(json)
 
 		TYPE_OBJECT:
 			return null
@@ -109,7 +128,7 @@ static func deserialize_json(json: Variant) -> Variant:
 		# 		result._json_import(json[&"value"])
 		# 	else:
 		# 		for prop_name : StringName in json[&"value"].keys():
-		# 			result.set(prop_name, deserialize_json(json[&"value"][prop_name]))
+		# 			result.set(prop_name, deserialize(json[&"value"][prop_name]))
 
 		# 	return result
 
@@ -117,14 +136,14 @@ static func deserialize_json(json: Variant) -> Variant:
 			var result : Dictionary = {}
 			for k in json[&"value"].keys():
 				var value = json[&"value"][k]
-				result[k] = deserialize_json(json[&"value"][k])
+				result[k] = deserialize(json[&"value"][k])
 			return result
 
 		TYPE_ARRAY:
 			var result : Array = []
 			result.resize(json[&"value"].size())
 			for i in result.size():
-				result[i] = deserialize_json(json[&"value"][i])
+				result[i] = deserialize(json[&"value"][i])
 			return result
 
 		TYPE_CALLABLE:
@@ -134,7 +153,7 @@ static func deserialize_json(json: Variant) -> Variant:
 		# 	var binds : Array = []
 		# 	binds.resize(json[&"value"][&"binds"].size())
 		# 	for i in binds.size():
-		# 		binds[i] = deserialize_json(json[&"value"][&"binds"][i])
+		# 		binds[i] = deserialize(json[&"value"][&"binds"][i])
 		# 	return result.bindv(binds).unbind(json[&"value"][&"unbinds"])
 
 		TYPE_COLOR:
@@ -150,6 +169,29 @@ static func deserialize_json(json: Variant) -> Variant:
 			return json[&"value"]
 
 	return null
+static func _deserialize_resource(json: Variant) -> Resource:
+	if json[&"value"] is String:
+		return load(json[&"value"])
+
+	var result : Resource = ClassDB.instantiate(json[&"class"])
+
+	if json.has(&"script"):
+		result.set_script(load(json[&"script"]))
+		assert(result.get_script() != null, "Attempted to deserialize an object, but couldn't set the script. Make sure that it has an _init() method with 0 *required* arguments.")
+
+	_resource_import(result, json[&"value"])
+	return result
+
+static func _resource_import(res: Resource, json: Dictionary) -> void:
+	if res.has_method(&"_json_import"):
+		res._json_import(json)
+
+	else:
+		var keys : Array = json.keys()
+		keys.sort_custom(_sort_import_keys)
+
+		for k : StringName in keys:
+			res.set(k, deserialize(json[k]))
 
 #endregion
 
@@ -195,50 +237,22 @@ var _encryption_password_quantized : String :
 @export_storage var data : Dictionary
 
 
-var import_order : PackedStringArray
-func _sort_import_keys(a: StringName, b: StringName) -> bool:
-	var ai := import_order.find(a)
-	if ai == -1:	return false
-
-	var bi := import_order.find(b)
-	if bi == -1:	return true
-
-	return ai < bi
-
-
 func _init(__save_path__: String = generate_save_path()) -> void:
 	_save_path = __save_path__
 	time_created = NOW
 	time_modified = time_created
-	import_order = [ &"script", &"resource_local_to_scene", &"resource_name", &"time_created", &"time_modified", &"data" ]
+
+	if not save_file_exists:
+		save()
 
 
 func json_export() -> Dictionary:
-	return serialize_json(self)
-func _json_export() -> Dictionary:
-	var json := {}
-	for prop in get_property_list():
-		if (
-				prop[&"name"][0] == "_"
-			or	not prop[&"usage"] & PROPERTY_USAGE_STORAGE
-		):
-			continue
-
-		json[prop[&"name"]] = serialize_json(self.get(prop[&"name"]))
-	return json
+	return serialize(self)
 
 
-func json_import(json: Dictionary) -> void:
-	if has_method(&"_json_import"):
-		var this = self
-		this._json_import(json)
+func json_import(json: Variant) -> void:
+	_resource_import(self, json[&"value"])
 
-	else:
-		var keys : Array = json[&"value"].keys()
-		keys.sort_custom(_sort_import_keys)
-
-		for k : StringName in keys:
-			self.set(k, deserialize_json(json[&"value"][k]))
 
 
 func shell_open() -> void:
@@ -250,7 +264,7 @@ func shell_open_location() -> void:
 
 func save(path: String = _save_path) -> void:
 	var file := FileAccess.open(path, FileAccess.WRITE)
-	assert(file != null, "Cannot save to file, file does not exist: %s" % path)
+	# assert(file != null, "Cannot save to file, file does not exist: %s" % path)
 
 	time_modified = NOW
 	var json := JSON.stringify(json_export(), "\t" if OS.is_debug_build() else "", OS.is_debug_build(), true)
