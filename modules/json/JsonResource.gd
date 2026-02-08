@@ -91,10 +91,6 @@ static func serialize(target: Variant) -> Dictionary:
 
 	return json
 static func _serialize_resource(res: Resource) -> Dictionary:
-	if res.get_script():
-		print(res.get_script().get_global_name())
-	else:
-		print(res.get_class())
 	var json := {}
 	for prop in res.get_property_list():
 		if (
@@ -104,7 +100,6 @@ static func _serialize_resource(res: Resource) -> Dictionary:
 			continue
 
 		json[prop[&"name"]] = serialize(res.get(prop[&"name"]))
-	print(json)
 	return json
 
 
